@@ -36,8 +36,8 @@ o cualquier otro cliente ligero arranca desde un servidor de red.
 _______________________________________________________
 01 ó 02 | nombre fichero | 0      | modo       | 0
 ```
-Modo puede ser: netascii, octet ó mail
-Utilizamos octet
+Modo puede ser: netascii, octet ó mail.
+Utilizamos octet.
 
 - Mensajes de datos
 ```
