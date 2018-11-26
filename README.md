@@ -20,21 +20,15 @@ o cualquier otro cliente ligero arranca desde un servidor de red.
 
 ### Mensajes
 
-#### Tipo
 
 **tipo - descripción**
+- 1 - Leer
+- 2 - Escribir
+- 3 - Datos
+- 4 - Asentimiento
+- 5 - Error
 
-1 - Leer
-
-2 - Escribir
-
-3 - Datos
-
-4 - Asentimiento
-
-5 - Error
-
-#### Formato
+### Formato
 
 - Lectura/Escritura
 ```
@@ -67,9 +61,8 @@ _______________________________________________________
 ```
 
 **error - significado**
-
-0 - No definido
-1 - Fichero no encontrado
-3 - Disco lleno
-4 - Operacion ilegal de TFTP
-6 - El fichero ya no existe
+- 0 - No definido
+- 1 - Fichero no encontrado
+- 3 - Disco lleno
+- 4 - Operacion ilegal de TFTP
+- 6 - El fichero ya no existe
