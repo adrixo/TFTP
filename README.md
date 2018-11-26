@@ -16,19 +16,25 @@ o cualquier otro cliente ligero arranca desde un servidor de red.
 "mail", de los que los dos primeros corresponden a los modos "ascii" e
 "imagen" (binario) del protocolo FTP.
 
-##Protocolo
+## Protocolo
 
-###Mensajes
+### Mensajes
 
-####Tipo
+#### Tipo
+
 **tipo - descripción**
+
 1 - Leer
+
 2 - Escribir
+
 3 - Datos
+
 4 - Asentimiento
+
 5 - Error
 
-####Formato
+#### Formato
 
 - Lectura/Escritura
 ```
@@ -61,6 +67,7 @@ _______________________________________________________
 ```
 
 **error - significado**
+
 0 - No definido
 1 - Fichero no encontrado
 3 - Disco lleno
