@@ -14,7 +14,8 @@ typedef unsigned char BYTE;
 
 /* Este struct no se usa, aunque sería una opcion mas conveniente una vez
  * comprendido el funcionamiento del protocolo.
- * En vez de esto se utiliza un array instanciado con calloc.
+ * En vez de esto se utiliza un array instanciado con calloc, no obstante el resultado
+ * final en memoria es idéntico en ambos casos.
  */
  /*
 typedef Union {
@@ -273,7 +274,7 @@ char * getFilename(BYTE *packet){
 }
 
 // gets the n of packet
-int packetNumber(BYTE *packet){
+int getPacketNumber(BYTE *packet){
 	if(packet == NULL)
 	{
 		printf("Error al obtener el numero del paquete: Paquete nulo.\n");
@@ -422,22 +423,22 @@ void printError(int errCode){
 }
 
 /*
-
 int getPacketType(BYTE *packet)
 char * getFilename(BYTE *packet)
-int packetNumber(BYTE *packet)
+int getPacketNumber(BYTE *packet)
 int getDataLength(BYTE *packet)
 char * getDataMSG(BYTE *packet)
 int getErrorCode(BYTE *packet)
 char * getErrorMsg(BYTE *packet)
 void printError(int errCode)
-
+int printMSG(BYTE *packet)
 */
-int printMSG(BYTE *packet){
+
+void printMSG(BYTE *packet){
 	if(packet == NULL)
 	{
 		printf("Error al imprimir el paquete: Paquete nulo.\n");
-		return 1;
+		return;
 	}
 	int i, packetN;
 
@@ -464,7 +465,7 @@ int printMSG(BYTE *packet){
 		case 3:
 			printf("%d %d | ", packet[2], packet[3]);
 			int dataLength = getDataLength(packet);
-			packetN = packetNumber(packet);
+			packetN = getPacketNumber(packet);
 			for(i=0; i<dataLength; i++)
 				printf(" %d ", packet[4+i]);
 			printf("|\n");
@@ -476,7 +477,7 @@ int printMSG(BYTE *packet){
 
 		case 4:
 			printf("%d %d |\n", packet[2], packet[3]);
-			int packetN = packetNumber(packet);
+			int packetN = getPacketNumber(packet);
 			printf("Packet number %d\n\n", packetN);
 			break;
 
