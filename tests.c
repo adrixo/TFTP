@@ -1,23 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "utils.c"
+#include "tftp_messages.c"
 
 void main(void)
 {
   char * h;
-  printf("%d\n", sizeof(char));
-  h = WRQ("123456x8", "octet");
-  printf("%d\n", getPacketType(h));
-  printf("s%s\n", getFilename(h));
 
-  h = DATAPacket(256, "holaseñormundo");
-  printf("%d\n", getPacketType(h));
-  printf("%s\n", getDataMSG(h));
+  h = WRQ("123456x8", "octet");
+  //printf("%d\n", getPacketType(h));
+  //printf("%s\n", getFilename(h));
+  printMSG(h);
+
+  h = DATAPacket(256, "123456789");
+  //printf("%d\n", getPacketType(h));
+  //printf("%s\n", getDataMSG(h));
+  printMSG(h);
 
   h = ACK(3242);
-  printf("%d\n", getPacketType(h));
+  //printf("%d\n", getPacketType(h));
+  printMSG(h);
 
   h = ErrorMsg(1, "Ya no funciona");
-  printf("%d\n", getPacketType(h));
-  printf("%s\n", getErrorMsg(h));
+  printMSG(h);
+  //printf("%d\n", getPacketType(h));
+  //printf("%s\n", getErrorMsg(h));
 }
