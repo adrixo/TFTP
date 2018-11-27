@@ -216,19 +216,19 @@ char * getFilename(BYTE *packet){
 	int packetType = getPacketType(packet);
 	if(packetType == 1 || packetType == 2)
 	{
-		int filenameLength;
-		for(filenameLength = 0; packet[2+filenameLength]!=0; filenameLength++){
-			if(packet[2+filenameLength]==0)
+		int dataLength;
+		for(dataLength = 0; packet[2+dataLength]!=0; dataLength++){
+			if(packet[2+dataLength]==0)
 				break;
 		}
-		printf("%d\n", filenameLength);
+		printf("%d\n", dataLength);
 
-		char * filename = (char *) malloc((filenameLength+1)* sizeof(char));
-		for(int i = 0; i<filenameLength; i++)
+		char * filename = (char *) malloc((dataLength+1)* sizeof(char));
+		for(int i = 0; i<dataLength; i++)
 			filename[i] = packet[2+i];
-		filename[filenameLength] = '\0';
+		filename[dataLength] = '\0';
 /*
-		for(int i = 0; i<filenameLength; i++)
+		for(int i = 0; i<dataLength; i++)
 			printf("%c",filename[i]);
 */
 		return filename;
@@ -255,6 +255,59 @@ int packetNumber(BYTE *packet){
 	} else {
 		printf("Error al obtener el numero de paquete: el paquete debe ser de datos o de asentimiento.\n");
 		return -1;
+	}
+}
+
+int *getDataLength(BYTE *packet){
+	if(packet == NULL)
+	{
+		printf("Error al obtener la longitud de los datos: Paquete nulo.\n");
+		return NULL;
+	}
+
+	int packetType = getPacketType(packet);
+	if(packetType == 3) {
+		int dataLength;
+		for(dataLength = 0; packet[4+dataLength]!=EOF; dataLength++){
+			if(packet[4+dataLength]==EOF)
+				break;
+			}
+		return dataLength;
+	} else {
+		printf("Error al obtener la longitud de los datos: el paquete debe ser de datos.\n");
+		return NULL;
+	}
+}
+
+char * getDataMSG(BYTE *packet){
+	if(packet == NULL)
+	{
+		printf("Error al obtener el paquete: Paquete nulo.\n");
+		return NULL;
+	}
+
+	int packetType = getPacketType(packet);
+	if(packetType == 3) {
+		int dataLength;
+		printf("Data length \n");
+		for(dataLength = 0; packet[4+dataLength]!=EOF; dataLength++){
+			if(packet[4+dataLength]==EOF)
+				break;
+		}
+		printf("Data length %d\n", dataLength);
+
+		char * data = (char *) malloc((dataLength+1)* sizeof(char));
+		for(int i = 0; i<dataLength; i++)
+			data[i] = packet[4+i];
+
+
+		for(int i = 0; i<dataLength; i++)
+			printf("%c",data[i]);
+
+		return data;
+	} else {
+		printf("Error al obtener el paquete: el paquete debe ser de datos.\n");
+		return NULL;
 	}
 }
 

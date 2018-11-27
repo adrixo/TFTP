@@ -10,8 +10,9 @@ void main(void)
   printf("%d\n", getPacketType(h));
   printf("s%s\n", getFilename(h));
 
-  h = DATAPacket(256, "123456789");
+  h = DATAPacket(256, "123456789\0");
   printf("%d\n", getPacketType(h));
+  char *s = getDataMSG(h);
 
   h = ACK(3242);
   printf("%d\n", getPacketType(h));
