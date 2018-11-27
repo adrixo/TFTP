@@ -12,12 +12,33 @@ typedef unsigned char BYTE;
 #define OPERACIONILEGAL 4
 #define FICHEROYANOEXISTE 6
 
-/* Este struct no se usa, aunque sería una opcion mas conveniente una vez
+/*
+ * Constructores de los paquetes
+ */
+BYTE * WRQ(char * filename, char * mode);
+BYTE * RRQ(char * filename, char * mode);
+BYTE * DATAPacket(int nBloque, BYTE * datos);
+BYTE * ACK(int nBloque);
+BYTE * ErrorMsg(int CODIGODEERROR, char *errMsg);
+/*
+ * Manejadores de la información contenida en los paquetes
+ */
+int getPacketType(BYTE *packet);
+char * getFilename(BYTE *packet);
+int getPacketNumber(BYTE *packet);
+int getDataLength(BYTE *packet);
+int isLastPacket(BYTE *packet);
+char * getDataMSG(BYTE *packet);
+int getErrorCode(BYTE *packet);
+char * getErrorMsg(BYTE *packet);
+void printError(int errCode);
+void printMSG(BYTE *packet);
+
+/* Este struct no se usa, aunque sería la opcion mas conveniente una vez
  * comprendido el funcionamiento del protocolo.
  * En vez de esto se utiliza un array instanciado con calloc, no obstante el resultado
  * final en memoria es idéntico en ambos casos.
- */
- /*
+ *//*
 typedef Union {
 	struct WReQuest_RReQuest{
 		BYTE[2] msgType;
@@ -305,7 +326,7 @@ int getDataLength(BYTE *packet){
 		char buff[PACKETSIZE];
 		//memset(buff, 0, PACKETSIZE);
 		memcpy(buff, packet+4, PACKETSIZE);
-		for(dataLength = 0; dataLength<PACKETSIZE-300; dataLength++){
+		for(dataLength = 0; dataLength<PACKETSIZE; dataLength++){
 			if(buff[dataLength]==0)
 				break;
 			}
@@ -315,6 +336,27 @@ int getDataLength(BYTE *packet){
 		printf("Error al obtener la longitud de los datos: el paquete debe ser de datos.\n");
 		return -1;
 	}
+}
+
+int isLastPacket(BYTE *packet){
+	if(packet == NULL)
+	{
+		printf("Error isLastPacket: Paquete nulo.\n");
+		return -1;
+	}
+
+	int packetType = getPacketType(packet);
+	if(packetType == 3) {
+		int dataLength = getDataLength(packet);
+		if(dataLength < PACKETSIZE)
+			return 1;
+		else
+			return 0;
+	} else {
+		printf("Error al obtener la longitud de los datos: el paquete debe ser de datos.\n");
+		return -1;
+	}
+
 }
 
 char * getDataMSG(BYTE *packet){
@@ -422,18 +464,6 @@ void printError(int errCode){
 	}
 }
 
-/*
-int getPacketType(BYTE *packet)
-char * getFilename(BYTE *packet)
-int getPacketNumber(BYTE *packet)
-int getDataLength(BYTE *packet)
-char * getDataMSG(BYTE *packet)
-int getErrorCode(BYTE *packet)
-char * getErrorMsg(BYTE *packet)
-void printError(int errCode)
-int printMSG(BYTE *packet)
-*/
-
 void printMSG(BYTE *packet){
 	if(packet == NULL)
 	{
@@ -496,7 +526,6 @@ void printMSG(BYTE *packet){
 
 }
 
-// gets the n of packet
 int plantilla(BYTE *packet){
 	if(packet == NULL)
 	{
