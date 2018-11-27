@@ -4,11 +4,43 @@
 
 typedef unsigned char BYTE;
 
+#define PACKETSIZE 512
+
 #define NODEFINIDO 0
 #define FICHERONOENCONTRADO 1
 #define DISCOLLENO 3
 #define OPERACIONILEGAL 4
 #define FICHEROYANOEXISTE 6
+
+/* Este struct no se usa, aunque sería una opcion mas conveniente una vez
+ * comprendido el funcionamiento del protocolo.
+ * En vez de esto se utiliza un array instanciado con calloc.
+ */
+ /*
+typedef Union {
+	struct WReQuest_RReQuest{
+		BYTE[2] msgType;
+		BYTE[512+2] filename_and_mode;
+	}
+
+	struct DataPacket{
+		BYTE[2] msgType;
+		BYTE[2] nBloque;
+		BYTE[512] data;
+	}
+
+	struct ACK{
+		BYTE[2] msgType;
+		BYTE[2] nBloque;
+	}
+
+	struct ErrorMsg{
+		BYTE[2] msgType;
+		BYTE[2] errorCode;
+		BYTE[512] message;
+	}
+} Message;
+*/
 
 /*
  *                    Write request
@@ -166,7 +198,7 @@ BYTE * ACK(int nBloque){
  * _______________________________________________________
  *  05     | codigo error | mensaje de error | 0
  */
-BYTE * ERRORMSG(int CODIGODEERROR, char *errMsg){
+BYTE * ErrorMsg(int CODIGODEERROR, char *errMsg){
 	int errMsgLength = strlen(errMsg);
 
 	BYTE * header = (BYTE *) calloc( 2+2+errMsgLength+1, sizeof(BYTE));
@@ -258,24 +290,28 @@ int packetNumber(BYTE *packet){
 	}
 }
 
-int *getDataLength(BYTE *packet){
+int getDataLength(BYTE *packet){
 	if(packet == NULL)
 	{
 		printf("Error al obtener la longitud de los datos: Paquete nulo.\n");
-		return NULL;
+		return -1;
 	}
 
 	int packetType = getPacketType(packet);
 	if(packetType == 3) {
 		int dataLength;
-		for(dataLength = 0; packet[4+dataLength]!=EOF; dataLength++){
-			if(packet[4+dataLength]==EOF)
+		char buff[PACKETSIZE];
+		//memset(buff, 0, PACKETSIZE);
+		memcpy(buff, packet+4, PACKETSIZE);
+		for(dataLength = 0; dataLength<PACKETSIZE-300; dataLength++){
+			if(buff[dataLength]==0)
 				break;
 			}
+			//printf("DataLength: %d\n", dataLength);
 		return dataLength;
 	} else {
 		printf("Error al obtener la longitud de los datos: el paquete debe ser de datos.\n");
-		return NULL;
+		return -1;
 	}
 }
 
@@ -288,22 +324,18 @@ char * getDataMSG(BYTE *packet){
 
 	int packetType = getPacketType(packet);
 	if(packetType == 3) {
-		int dataLength;
-		printf("Data length \n");
-		for(dataLength = 0; packet[4+dataLength]!=EOF; dataLength++){
-			if(packet[4+dataLength]==EOF)
-				break;
-		}
-		printf("Data length %d\n", dataLength);
+		int dataLength = getDataLength(packet);
+		printf("Data length: %d\n", dataLength);
 
 		char * data = (char *) malloc((dataLength+1)* sizeof(char));
+
+		memcpy(data, packet+4, dataLength);
+
+/*
 		for(int i = 0; i<dataLength; i++)
-			data[i] = packet[4+i];
-
-
-		for(int i = 0; i<dataLength; i++)
-			printf("%c",data[i]);
-
+			printf("packetData: %c\n",data[i]);
+		printf("%s\n", data);
+*/
 		return data;
 	} else {
 		printf("Error al obtener el paquete: el paquete debe ser de datos.\n");

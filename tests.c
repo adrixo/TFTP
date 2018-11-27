@@ -10,14 +10,14 @@ void main(void)
   printf("%d\n", getPacketType(h));
   printf("s%s\n", getFilename(h));
 
-  h = DATAPacket(256, "123456789\0");
+  h = DATAPacket(256, "holaseñormundo");
   printf("%d\n", getPacketType(h));
-  char *s = getDataMSG(h);
+  printf("%s\n", getDataMSG(h));
 
   h = ACK(3242);
   printf("%d\n", getPacketType(h));
 
-  h = ERRORMSG(1, "Ya no funciona");
+  h = ErrorMsg(1, "Ya no funciona");
   printf("%d\n", getPacketType(h));
-  getErrorMsg(h);
+  printf("%s\n", getErrorMsg(h));
 }
