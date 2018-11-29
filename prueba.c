@@ -13,7 +13,6 @@
 #include "tftp_messageHandler.c"
 
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
-#define TAM_DATOS 512
 
 
 void serverUDPEnviarFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
@@ -55,7 +54,7 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 
   fichero = fopen(Nombrefichero,"r");
   if(fichero==NULL){
-		h = ErrorMsg(1, "No se ha encontrado el fichero el fichero");
+		h = ErrorMsg(FICHERONOENCONTRADO, "No se ha encontrado el fichero el fichero");
 		sendto (s, &h, 2+2+strlen("No se ha encontrado el fichero el fichero")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		printf("No se ha encontrado el fichero el fichero\n");
 		return;
@@ -73,7 +72,7 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 	else UltimosdatosFichero = malloc(sizeof(char)*1);
 
   if(datosFichero==NULL){
-		h = ErrorMsg(0, "Error al hacer el malloc");
+		h = ErrorMsg(NODEFINIDO, "Error al hacer el malloc");
 		sendto (s, &h, 2+2+strlen("Error al hacer el malloc")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
  		printf("Error al hacer el malloc\n");
   	return;
@@ -94,12 +93,12 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 		sendto (s, &h, 2+2+getDataLength(h),0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 	  if(cc == -1){
-		  h = ErrorMsg(0, "Error al recibir un mensaje");
+		  h = ErrorMsg(NODEFINIDO, "Error al recibir un mensaje");
 			sendto (s, &h, 2+2+strlen("Error al recibir un mensaje")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		  }
     if(getPacketType(asentimiento)!=4 && getPacketNumber(asentimiento)!=n){
-		  h = ErrorMsg(0, "Numero asentimiento/paquete incorrecto");
+		  h = ErrorMsg(NODEFINIDO, "Numero asentimiento/paquete incorrecto");
 			sendto (s, &h, 2+2+strlen("Numero asentimiento/paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		  }
@@ -115,14 +114,14 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
   int n=0,fin=0; 
 	int cc;				    /* contains the number of bytes read */
   char * h;
-  char parteFichero[TAM_DATOS];
+  char parteFichero[PACKETSIZE];
 	FILE * fichero;
 	int addrlen;  
   addrlen = sizeof(struct sockaddr_in);
 
 	fichero = fopen(Nombrefichero,"r");
   if(fichero!=NULL){
-		h = ErrorMsg(6, "El fichero ya existe");
+		h = ErrorMsg(FICHEROYANOEXISTE, "El fichero ya existe");
 		sendto (s, &h, 2+2+strlen("El fichero ya existe")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		printf("El fichero ya existe\n");
 		return;
@@ -133,20 +132,20 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 
   while(fin==2){
 		n++;
-		cc = recvfrom (s, parteFichero, TAM_DATOS,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+		cc = recvfrom (s, parteFichero, PACKETSIZE,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 
 	  if(cc == -1){
-		  h = ErrorMsg(0, "Error al recibir un mensaje");
+		  h = ErrorMsg(NODEFINIDO, "Error al recibir un mensaje");
 			sendto (s, &h, 2+2+strlen("Error al recibir un mensaje")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		  }
 		if(getPacketType(parteFichero)!=3 && getPacketNumber(parteFichero)!=n){
-		  h = ErrorMsg(0, "Numero asentimiento/paquete incorrecto");
+		  h = ErrorMsg(NODEFINIDO, "Numero asentimiento/paquete incorrecto");
 			sendto (s, &h, 2+2+strlen("Numero asentimiento/paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		}
  
-		fwrite(parteFichero, sizeof(char), TAM_DATOS, fichero ); 
+		fwrite(parteFichero, sizeof(char), PACKETSIZE, fichero ); 
     h = ACK(n);
 	  sendto (s, &h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 
@@ -174,7 +173,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 
   fichero = fopen(Nombrefichero,"r");
   if(fichero==NULL){
-		h = ErrorMsg(1, "No se ha encontrado el fichero el fichero");
+		h = ErrorMsg(FICHERONOENCONTRADO, "No se ha encontrado el fichero el fichero");
 		sendto (s, &h, 2+2+strlen("No se ha encontrado el fichero el fichero")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		printf("No se ha encontrado el fichero el fichero\n");
 		return;
@@ -185,12 +184,12 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 	cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 
 	if(cc == -1){
-		h = ErrorMsg(0, "Error al recibir un mensaje");
+		h = ErrorMsg(NODEFINIDO, "Error al recibir un mensaje");
 		sendto (s, &h, 2+2+strlen("Error al recibir un mensaje")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		return;
 	}
   if(getPacketType(asentimiento)!=4 && getPacketNumber(asentimiento)!=n){
-		h = ErrorMsg(0, "Numero asentimiento/paquete incorrecto");
+		h = ErrorMsg(NODEFINIDO, "Numero asentimiento/paquete incorrecto");
 		sendto (s, &h, 2+2+strlen("Numero asentimiento/paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		return;
 	}	
@@ -206,7 +205,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 	else UltimosdatosFichero = malloc(sizeof(char)*1);
  
   if(datosFichero==NULL){
-		h = ErrorMsg(0, "Error al hacer el malloc");
+		h = ErrorMsg(NODEFINIDO, "Error al hacer el malloc");
 	  sendto (s, &h, 2+2+strlen("Error al hacer el malloc")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
  		printf("Error al hacer el malloc\n");
   	return;
@@ -228,12 +227,12 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 	  sendto (s, &h, 2+2+getDataLength(h),0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 	  if(cc == -1){
-		  h = ErrorMsg(0, "Error al recibir un mensaje");
+		  h = ErrorMsg(NODEFINIDO, "Error al recibir un mensaje");
 			sendto (s, &h, 2+2+strlen("Error al recibir un mensaje")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		  }
     if(getPacketType(asentimiento)!=4 && getPacketNumber(asentimiento)!=n){
-		  h = ErrorMsg(0, "Numero asentimiento/paquete incorrecto");
+		  h = ErrorMsg(NODEFINIDO, "Numero asentimiento/paquete incorrecto");
 			sendto (s, &h, 2+2+strlen("Numero asentimiento/paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		 }
@@ -250,14 +249,14 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
 	int cc;				    /* contains the number of bytes read */
   char * h;
 	char asentimiento[4];
-  char parteFichero[TAM_DATOS];
+  char parteFichero[PACKETSIZE];
 	FILE * fichero;
 	int addrlen;  
   addrlen = sizeof(struct sockaddr_in);
 
 	fichero = fopen(Nombrefichero,"r");
   if(fichero!=NULL){
-		h = ErrorMsg(6, "El fichero ya existe");
+		h = ErrorMsg(FICHEROYANOEXISTE, "El fichero ya existe");
 		sendto (s, &h, 2+2+strlen("El fichero ya existe")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 		printf("El fichero ya existe\n");
 		return;
@@ -269,20 +268,20 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
 
   while(fin==2){
 		n++;
-		cc = recvfrom (s, parteFichero, TAM_DATOS,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+		cc = recvfrom (s, parteFichero, PACKETSIZE,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 
 	  if(cc == -1){
-		  h = ErrorMsg(0, "Error al recibir un mensaje");
+		  h = ErrorMsg(NODEFINIDO, "Error al recibir un mensaje");
 			sendto (s, &h, 2+2+strlen("Error al recibir un mensaje")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		  }
 		if(getPacketType(parteFichero)!=3 && getPacketNumber(parteFichero)!=n){
-		  h = ErrorMsg(0, "Numero asentimiento/paquete incorrecto");
+		  h = ErrorMsg(NODEFINIDO, "Numero asentimiento/paquete incorrecto");
 			sendto (s, &h, 2+2+strlen("Numero asentimiento/paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 			return;
 		}
  
-		fwrite(parteFichero, sizeof(char), TAM_DATOS, fichero ); 
+		fwrite(parteFichero, sizeof(char), PACKETSIZE, fichero ); 
     h = ACK(n);
 	  sendto (s, &h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);	
 
