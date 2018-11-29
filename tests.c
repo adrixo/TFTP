@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "tftp_messageHandler.c"
 
-void main(void)
+int main(void)
 {
   char * h;
 
@@ -26,4 +26,6 @@ void main(void)
   printMSG(h);
   //printf("%d\n", getPacketType(h));
   //printf("%s\n", getErrorMsg(h));
+
+  return 1;
 }

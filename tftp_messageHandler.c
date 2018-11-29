@@ -34,7 +34,7 @@ char * getErrorMsg(BYTE *packet);
 void printError(int errCode);
 void printMSG(BYTE *packet);
 
-/* Este struct no se usa, aunque sería la opcion mas conveniente una vez
+/* Este struct no se usa, aunque sería la opcion mas conveniente para linux una vez
  * comprendido el funcionamiento del protocolo.
  * En vez de esto se utiliza un array instanciado con calloc, no obstante el resultado
  * final en memoria es idéntico en ambos casos.
@@ -74,6 +74,7 @@ typedef Union {
 BYTE * WRQ(char * filename, char * mode){
 	int fileLength = strlen(filename);
 	int modeLength = strlen(mode);
+	int i;
 
 	BYTE * header = (BYTE *) calloc( 2 + fileLength + 1 + modeLength + 1, sizeof(BYTE));
 
@@ -82,7 +83,7 @@ BYTE * WRQ(char * filename, char * mode){
 	header[1] = 1;
 
 //file name
-	for(int i=0; i<fileLength;i++){
+	for(i=0; i<fileLength;i++){
 		header[2+i] = filename[i];
 	}
 
@@ -90,7 +91,7 @@ BYTE * WRQ(char * filename, char * mode){
 	header[2+fileLength] = 0;
 
 //mode
-	for(int i=0; i<modeLength;i++){
+	for(i=0; i<modeLength;i++){
 		header[2+fileLength+1+i] = mode[i];
 	}
 
@@ -115,6 +116,7 @@ BYTE * WRQ(char * filename, char * mode){
 BYTE * RRQ(char * filename, char * mode){
 	int fileLength = strlen(filename);
 	int modeLength = strlen(mode);
+	int i;
 
 	BYTE * header = (BYTE *) calloc( 2 + fileLength + 1 + modeLength + 1, sizeof(BYTE));
 
@@ -123,7 +125,7 @@ BYTE * RRQ(char * filename, char * mode){
 	header[1] = 2;
 
 //file name
-	for(int i=0; i<fileLength;i++){
+	for(i=0; i<fileLength;i++){
 		header[2+i] = filename[i];
 	}
 
@@ -131,7 +133,7 @@ BYTE * RRQ(char * filename, char * mode){
 	header[2+fileLength] = 0;
 
 //mode
-	for(int i=0; i<modeLength;i++){
+	for(i=0; i<modeLength;i++){
 		header[2+fileLength+1+i] = mode[i];
 	}
 
@@ -154,6 +156,7 @@ BYTE * RRQ(char * filename, char * mode){
  */
 BYTE * DATAPacket(int nBloque, BYTE * datos){
 	int dataLength = strlen(datos);
+	int i;
 
 	BYTE * header = (BYTE *) calloc( 2+2+dataLength, sizeof(BYTE));
 
@@ -170,7 +173,7 @@ BYTE * DATAPacket(int nBloque, BYTE * datos){
 	header[3] = nBloque%256;
 
 //N bytes
-	for(int i = 0; i<dataLength; i++)
+	for(i = 0; i<dataLength; i++)
 		header[4+i] = datos[i];
 
 /*
@@ -223,6 +226,7 @@ BYTE * ACK(int nBloque){
  */
 BYTE * ErrorMsg(int CODIGODEERROR, char *errMsg){
 	int errMsgLength = strlen(errMsg);
+	int i;
 
 	BYTE * header = (BYTE *) calloc( 2+2+errMsgLength+1, sizeof(BYTE));
 
@@ -235,7 +239,7 @@ BYTE * ErrorMsg(int CODIGODEERROR, char *errMsg){
 	header[3] = CODIGODEERROR%256;
 
 // Error msg
-	for(int i = 0; i<errMsgLength; i++)
+	for(i = 0; i<errMsgLength; i++)
 		header[4+i] = errMsg[i];
 
 // 1 byte
@@ -268,6 +272,7 @@ char * getFilename(BYTE *packet){
 		return NULL;
 	}
 
+	int i;
 	int packetType = getPacketType(packet);
 	if(packetType == 1 || packetType == 2)
 	{
@@ -279,7 +284,7 @@ char * getFilename(BYTE *packet){
 //		printf("%d\n", dataLength);
 
 		char * filename = (char *) malloc((dataLength+1)* sizeof(char));
-		for(int i = 0; i<dataLength; i++)
+		for(i = 0; i<dataLength; i++)
 			filename[i] = packet[2+i];
 		filename[dataLength] = '\0';
 /*
@@ -417,6 +422,7 @@ char * getErrorMsg(BYTE *packet){
 	int packetType = getPacketType(packet);
 	if(packetType == 5)
 	{
+		int i;
 		int errorMsgLength;
 		for(errorMsgLength = 0; packet[4+errorMsgLength]!=0; errorMsgLength++){
 			if(packet[4+errorMsgLength]==0)
@@ -425,7 +431,7 @@ char * getErrorMsg(BYTE *packet){
 //		printf("%d\n", errorMsgLength);
 
 		char * filename = (char *) malloc((errorMsgLength+1)* sizeof(char));
-		for(int i = 0; i<errorMsgLength; i++)
+		for(i = 0; i<errorMsgLength; i++)
 			filename[i] = packet[4+i];
 		filename[errorMsgLength] = '\0';
 

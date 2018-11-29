@@ -19,14 +19,16 @@
 #include <unistd.h>
 
 
+#define VERBOSE 1
 
-#define PUERTO 17278
+#define PUERTO 41921
 #define ADDRNOTFOUND	0xffffffff	/* return address for unfound host */
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
 #define TAM_BUFFER 10
 #define MAXHOST 128
 
 extern int errno;
+
 
 /*
  *			M A I N
@@ -56,30 +58,51 @@ char *argv[];
   int cc;				    /* contains the number of bytes read */
 
   struct sigaction sa = {.sa_handler = SIG_IGN}; /* used to ignore SIGCHLD */
+/*
+  struct sigaction {
+       void     (*sa_handler)(int);
+       void     (*sa_sigaction)(int, siginfo_t *, void *);
+       sigset_t   sa_mask;
+       int        sa_flags;
+       void     (*sa_restorer)(void);
+   };
+ */
 
   struct sockaddr_in myaddr_in;	/* for local socket address */
   struct sockaddr_in clientaddr_in;	/* for peer socket address */
+  /*
+  /usr/include/netinet/in.h
+  struct sockaddr_in {
+      sa_family_t     sin_family;
+      in_port_t       sin_port;
+      struct  in_addr sin_addr;
+      char            sin_zero[8];
+    }
+  */
   int addrlen;
 
   fd_set readmask;
-    int numfds,s_mayor;
+  int numfds,s_mayor;
 
-    char buffer[BUFFERSIZE];	/* buffer for packets to be read into */
+  char buffer[BUFFERSIZE];	/* buffer for packets to be read into */
 
-    struct sigaction vec;
+  struct sigaction vec;
 
-		/* Create the listen socket. */
+  /* Create the listen socket. */
 	ls_TCP = socket (AF_INET, SOCK_STREAM, 0);
 	if (ls_TCP == -1) {
 		perror(argv[0]);
 		fprintf(stderr, "%s: unable to create socket TCP\n", argv[0]);
 		exit(1);
 	}
-	/* clear out address structures */
-	memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
-   	memset ((char *)&clientaddr_in, 0, sizeof(struct sockaddr_in));
 
-    addrlen = sizeof(struct sockaddr_in);
+  if(VERBOSE) printf("ls_TCP obtenido: %d  - bind(AF_INET,SOCK_STREAM, 0)\n", ls_TCP);
+
+	/* clear out address structures */
+  memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
+  memset ((char *)&clientaddr_in, 0, sizeof(struct sockaddr_in));
+
+  addrlen = sizeof(struct sockaddr_in);
 
 		/* Set up address structure for the listen socket. */
 	myaddr_in.sin_family = AF_INET;
@@ -95,6 +118,8 @@ char *argv[];
 		 */
 	myaddr_in.sin_addr.s_addr = INADDR_ANY;
 	myaddr_in.sin_port = htons(PUERTO);
+  if(VERBOSE) printf("myaddr_in rellenado - sin_family: %d - sin_port: %d. %d - sin_addr: %d\n", myaddr_in.sin_family, myaddr_in.sin_port, PUERTO, myaddr_in.sin_addr.s_addr);
+  exit(1);
 
 	/* Bind the listen address to the socket. */
 	if (bind(ls_TCP, (const struct sockaddr *) &myaddr_in, sizeof(struct sockaddr_in)) == -1) {
