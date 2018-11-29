@@ -78,7 +78,35 @@ main:
     7.2 registrar sigcld a sig_ign
     7.3 registramos sigterm
 
+8. Dentro del fork se inicia un while hasta que FIN (global) se pone a 0
+  por ejemplo con la funcion finalizar asociada al handler de la señal SIGTERM
 
-x. cerramos ls_tcp y s_udp
+9. Meter en el conjunto de sockets los sockets udp y tcp
+  FD_ZERO(&readmask); //Clears a set
+  FD_SET(ls_TCP, &readmask); //Add a given file descriptor
+  FD_SET(s_UDP, &readmask);
+
+10.
+  numfds = select(s_mayor+1, &readmask, (fd_set *)0, (fd_set *)0, NULL);
+
+11. se comprueba si se ha seleccionado TCP o UDP
+  if (FD_ISSET(ls_TCP, &readmask)) {
+  if (FD_ISSET(s_UDP, &readmask)) {
+
+12. Caso TCP
+  12.1 Se llama a una funion bloqueante hasta que una nueva conexión viene
+    s_TCP = accept(ls_TCP, (struct sockaddr *) &clientaddr_in, &addrlen);
+  12.2 se hace fork, el hijo se encarga de resolver la peticion:
+    serverTCP(s_TCP, clientaddr_in);
+
+13. Caso UDP
+  13.1 cc = recvfrom(s_UDP, buffer, BUFFERSIZE - 1, 0,
+     (struct sockaddr *)&clientaddr_in, &addrlen);
+  13.2
+    buffer[cc]='\0';
+    serverUDP (s_UDP, buffer, clientaddr_in);
+
+
+14. cerramos ls_tcp y s_udp
   close(ls_TCP);
   close(s_UDP);
