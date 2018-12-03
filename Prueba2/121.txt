@@ -1,0 +1,53 @@
+Mostrar Listado Empleados: Seleccionar Empleado y Añadir Empleado.
+Añadir Empleado.
+Seleccionar Empleado: Modificar o Eliminar empleado, Asignar Tarea, Mostrar historial tareas.
+Modificar o Eliminar empleado.
+Asignar tarea: Seleccionar Empleado, Seleccionar Maquinaria.
+Mostrar historial tareas: Seleccionar Tarea.
+Seleccionar Tarea: Modificar o Eliminar tarea, Seleccionar Empleado, Seleccionar Maquinaria.
+Modificar o Eliminar tarea.
+Mostrar Listado Ventas: Seleccionar Venta.
+Seleccionar Venta: Modificar o Eliminar venta.
+Modificar o Eliminar venta.
+Mostrar Listado incidencia: Seleccionar incidencia y Añadir incidencia.
+Añadir incidencia.
+Seleccionar incidencia: Modificar o Eliminar incidencia.
+Modificar o Eliminar incidencia.
+
+Controladores: Empleados, Tareas, Ventas, Incidencias. Uniones:
+	-Empleados: Controladores: NO.
+	-Tareas: Controladores: Empleados, Maquinarias, Terrenos.
+	-Ventas: Controladores: Animales, Cosechas, Tratantes.
+	-Incidencias: Terrenos.
+
+Interfaces:
+	-Empleados: ListarEmpleados(), AñadirEmpleado(), SeleccionarEmpleado(Empleado(nif));
+	-Empleado: MostrarEmpleado(Empleado(nif)),Modificar(Empleado), Eliminar(Empleado(nif)), Asignar Tarea(), Mostrar historial tareas().
+	-Añadir Empleado: AñadirEmpleado(Empleado)
+
+
+	-Tareas: ListarTareas(), SeleccionarTarea(Tarea)
+	-Tarea: MostrarTarea(Tarea)
+	-Asignar Tarea: AsignarTarea(Tarea), SeleccionarEmpleado(Empleado(nif)), 						     SeleccionarMaquinaria(Empleado(nif)).
+	-Ventas:
+	-Venta:
+	-Incidencias:
+	-Incidencia:
+	-Añadir Incidencia:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
