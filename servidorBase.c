@@ -18,7 +18,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "utils.c"
 
 #define VERBOSE 1
 
@@ -218,7 +217,7 @@ char *argv[];
       FD_ZERO(&readmask);
       FD_SET(ls_TCP, &readmask);
       FD_SET(s_UDP, &readmask);
-      if(VERBOSE) printf("Tras fork: FD_Sets - ls_TCP: %d s_UDP: %d \n", ls_TCP, s_UDP);
+      if(VERBOSE) printf("Tras fork: FD_Sets - ls_TCP: %d s_UDP: %d - %d\n", ls_TCP, s_UDP);
 
       /*
       Seleccionar el descriptor del socket que ha cambiado. Deja una marca en
@@ -490,8 +489,6 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 		/* Copy address of host into the return buffer. */
 		reqaddr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
 	}
-
-  addToLog("ServerUDP; ", buffer, inet_ntoa(clientaddr_in.sin_addr), "s", PUERTO);
   freeaddrinfo(res);
 
 	nc = sendto (s, &reqaddr, sizeof(struct in_addr),

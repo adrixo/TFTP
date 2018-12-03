@@ -34,7 +34,7 @@ extern int errno;
 #define ADDRNOTFOUND	0xffffffff	/* value returned for unknown host */
 #define RETRIES	5		/* number of times to retry before givin up */
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
-#define PUERTO 17278
+#define PUERTO 41921
 #define TIMEOUT 6
 #define MAXHOST 512
 /*
@@ -81,7 +81,7 @@ char *argv[];
 		fprintf(stderr, "Usage:  %s <nameserver> <target>\n", argv[0]);
 		exit(1);
 	}
-	
+
 		/* Create the socket. */
 	s = socket (AF_INET, SOCK_DGRAM, 0);
 	if (s == -1) {
@@ -89,11 +89,11 @@ char *argv[];
 		fprintf(stderr, "%s: unable to create socket\n", argv[0]);
 		exit(1);
 	}
-	
+
     /* clear out address structures */
 	memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
 	memset ((char *)&servaddr_in, 0, sizeof(struct sockaddr_in));
-	
+
 			/* Bind socket to some local address so that the
 		 * server can send the reply back.  A port number
 		 * of zero will be used so that the system will
@@ -133,8 +133,8 @@ char *argv[];
 		 */
       memset (&hints, 0, sizeof (hints));
       hints.ai_family = AF_INET;
- 	 /* esta función es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
-    errcode = getaddrinfo (argv[1], NULL, &hints, &res); 
+ 	 /* esta funciï¿½n es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
+    errcode = getaddrinfo (argv[1], NULL, &hints, &res);
     if (errcode != 0){
 			/* Name was not found.  Return a
 			 * special value signifying the error. */
@@ -158,9 +158,9 @@ char *argv[];
             fprintf(stderr,"%s: unable to register the SIGALRM signal\n", argv[0]);
             exit(1);
         }
-	
+
     n_retry=RETRIES;
-    
+
 	while (n_retry > 0) {
 		/* Send the request to the nameserver. */
         if (sendto (s, argv[2], strlen(argv[2]), 0, (struct sockaddr *)&servaddr_in,
@@ -183,25 +183,25 @@ char *argv[];
     				 * not already exceeded the retry limit.
     				 */
  		         printf("attempt %d (retries %d).\n", n_retry, RETRIES);
-  	 		     n_retry--; 
-                    } 
+  	 		     n_retry--;
+                    }
             else  {
 				printf("Unable to get response from");
-				exit(1); 
+				exit(1);
                 }
-              } 
+              }
         else {
             alarm(0);
             /* Print out response. */
-            if (reqaddr.s_addr == ADDRNOTFOUND) 
+            if (reqaddr.s_addr == ADDRNOTFOUND)
                printf("Host %s unknown by nameserver %s\n", argv[2], argv[1]);
             else {
                 /* inet_ntop para interoperatividad con IPv6 */
                 if (inet_ntop(AF_INET, &reqaddr, hostname, MAXHOST) == NULL)
                    perror(" inet_ntop \n");
                 printf("Address for %s is %s\n", argv[2], hostname);
-                }	
-            break;	
+                }
+            break;
             }
   }
 

@@ -10,7 +10,7 @@
  *
  *
  */
- 
+
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -21,7 +21,7 @@
 #include <string.h>
 #include <time.h>
 
-#define PUERTO 17278
+#define PUERTO 41921
 #define TAM_BUFFER 10
 
 /*
@@ -61,20 +61,20 @@ char *argv[];
 		fprintf(stderr, "%s: unable to create socket\n", argv[0]);
 		exit(1);
 	}
-	
+
 	/* clear out address structures */
 	memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
 	memset ((char *)&servaddr_in, 0, sizeof(struct sockaddr_in));
 
 	/* Set up the peer address to which we will connect. */
 	servaddr_in.sin_family = AF_INET;
-	
+
 	/* Get the host information for the hostname that the
 	 * user passed in. */
       memset (&hints, 0, sizeof (hints));
       hints.ai_family = AF_INET;
- 	 /* esta función es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
-    errcode = getaddrinfo (argv[1], NULL, &hints, &res); 
+ 	 /* esta funciï¿½n es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
+    errcode = getaddrinfo (argv[1], NULL, &hints, &res);
     if (errcode != 0){
 			/* Name was not found.  Return a
 			 * special value signifying the error. */
