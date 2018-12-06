@@ -461,30 +461,28 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 {
   printf("Starting serverUDP on socket: %d \n", s);
   //https://stackoverflow.com/questions/24182950/how-to-get-hostname-from-ip-linux
-  addToLog("ServerUDP: ", buffer, inet_ntoa(clientaddr_in.sin_addr), "TFTP", ntohs(clientaddr_in.sin_port));
+  addToLog("Inicia peticion: ", buffer, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
 
   int nc;
 	int addrlen;
   char *nombreFichero;
   addrlen = sizeof(struct sockaddr_in);
 
+  printMSG(buffer);
   if(getPacketType(buffer)==1){
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
-    //serverUDPRecibeFichero(s,getFilename(msg), (struct sockaddr *)&clientaddr_in);
+    addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+    //serverUDPRecibeFichero(s,getFilename(msg), clientaddr_in);
   }
   if(getPacketType(buffer)==2){
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
-    //serverUDPEnviaFichero(s,getFilename(msg), (struct sockaddr *)&clientaddr_in);
+    addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+    //serverUDPEnviaFichero(s,getFilename(msg), clientaddr_in);
   }
-
-  //si no es ninguno => enviarError OPERACIONILEGAL
-	nc = sendto (s, nombreFichero, BUFFERSIZE,
-			0, (struct sockaddr *)&clientaddr_in, addrlen);
-	if ( nc == -1) {
-    perror("serverUDP");
-    printf("%s: sendto error\n", "serverUDP");
-    return;
+  else {
+    sendErrorMSG(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
   }
+  sendErrorMSG(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
 }
