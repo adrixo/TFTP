@@ -36,6 +36,9 @@
 *.x86_64
 *.hex
 now
+clienteudp
+clientetcp
+servidor
 
 # Debug files
 *.dSYM/

@@ -18,7 +18,6 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "utils.c"
 
 #define VERBOSE 1
 
@@ -30,6 +29,8 @@
 
 extern int errno;
 
+#include "tftp_messageHandler.c"
+#include "utils.c"
 
 /*
  *			M A I N
@@ -97,7 +98,6 @@ char *argv[];
 		exit(1);
 	}
 
-  if(VERBOSE) printf("ls_TCP obtenido: %d  - socket(AF_INET,SOCK_STREAM, 0)\n", ls_TCP);
 
 	/* clear out address structures */
   memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
@@ -119,7 +119,6 @@ char *argv[];
 		 */
 	myaddr_in.sin_addr.s_addr = INADDR_ANY;
 	myaddr_in.sin_port = htons(PUERTO);
-  if(VERBOSE) printf("myaddr_in rellenado - sin_family: %d - sin_port: %d. %d - sin_addr: %d\n", myaddr_in.sin_family, myaddr_in.sin_port, PUERTO, myaddr_in.sin_addr.s_addr);
 
 	/* Bind the listen address to the socket. */
 	if (bind(ls_TCP, (const struct sockaddr *) &myaddr_in, sizeof(struct sockaddr_in)) == -1) {
@@ -127,7 +126,6 @@ char *argv[];
 		fprintf(stderr, "%s: unable to bind address TCP\n", argv[0]);
 		exit(1);
 	}
-  if(VERBOSE) printf("Bind realizado para ls_TCP\n");
 
 
 		/* Initiate the listen on the socket so remote users
@@ -139,7 +137,6 @@ char *argv[];
 		fprintf(stderr, "%s: unable to listen on socket\n", argv[0]);
 		exit(1);
 	}
-  if(VERBOSE) printf("Listen realizado con longitud de cola 5\n");
 
 
 	/* Create the socket UDP. */
@@ -149,7 +146,6 @@ char *argv[];
 		printf("%s: unable to create socket UDP\n", argv[0]);
 		exit(1);
   }
-  if(VERBOSE) printf("s_UDP obtenido: %d  -socket (AF_INET, SOCK_DGRAM, 0)\n", s_UDP);
 
 	/* Bind the server's address to the socket. */
 	if (bind(s_UDP, (struct sockaddr *) &myaddr_in, sizeof(struct sockaddr_in)) == -1) {
@@ -157,7 +153,6 @@ char *argv[];
 		printf("%s: unable to bind address UDP\n", argv[0]);
 		exit(1);
   }
-  if(VERBOSE) printf("Bind realizado para s_UDP\n");
 
 		/* Now, all the initialization of the server is
 		 * complete, and any user errors will have already
@@ -218,7 +213,6 @@ char *argv[];
       FD_ZERO(&readmask);
       FD_SET(ls_TCP, &readmask);
       FD_SET(s_UDP, &readmask);
-      if(VERBOSE) printf("Tras fork: FD_Sets - ls_TCP: %d s_UDP: %d \n", ls_TCP, s_UDP);
 
       /*
       Seleccionar el descriptor del socket que ha cambiado. Deja una marca en
@@ -241,7 +235,6 @@ char *argv[];
 
         /* Comprobamos si el socket seleccionado es el socket TCP */
         if (FD_ISSET(ls_TCP, &readmask)) {
-          if(VERBOSE) printf("FD_ISSET TCP\n");
             /* Note that addrlen is passed as a pointer
             * so that the accept call can return the
             * size of the returned address.
@@ -299,7 +292,6 @@ char *argv[];
           */
           buffer[cc]='\0';
           serverUDP (s_UDP, buffer, clientaddr_in);
-          if(VERBOSE) printf("FD_ISSET UDP\n");
         }
       }
 		}   /* Fin del bucle infinito de atenci�n a clientes */
@@ -464,41 +456,35 @@ void errout(char *hostname)
  *	logging information to stdout.
  *
  */
+// Venimos de la llamada: serverUDP (s_UDP, buffer, clientaddr_in);
 void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 {
-  struct in_addr reqaddr;	/* for requested host's address */
-  struct hostent *hp;		/* pointer to host info for requested host */
-  int nc, errcode;
+  printf("Starting serverUDP on socket: %d \n", s);
+  //https://stackoverflow.com/questions/24182950/how-to-get-hostname-from-ip-linux
+  addToLog("ServerUDP: ", buffer, inet_ntoa(clientaddr_in.sin_addr), "TFTP", ntohs(clientaddr_in.sin_port));
 
-  struct addrinfo hints, *res;
-
+  int nc;
 	int addrlen;
-
+  char *nombreFichero;
   addrlen = sizeof(struct sockaddr_in);
 
-  memset (&hints, 0, sizeof (hints));
-  hints.ai_family = AF_INET;
-	/* Treat the message as a string containing a hostname. */
-	/* Esta funci�n es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta. */
-  errcode = getaddrinfo (buffer, NULL, &hints, &res);
-  if (errcode != 0){
-	   /* Name was not found.  Return a
-	   * special value signifying the error. */
-	  reqaddr.s_addr = ADDRNOTFOUND;
+  if(getPacketType(buffer)==1){
+    nombreFichero = getFilename(buffer);
+    if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
+    //serverUDPRecibeFichero(s,getFilename(msg), (struct sockaddr *)&clientaddr_in);
   }
-  else {
-		/* Copy address of host into the return buffer. */
-		reqaddr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
-	}
+  if(getPacketType(buffer)==2){
+    nombreFichero = getFilename(buffer);
+    if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
+    //serverUDPEnviaFichero(s,getFilename(msg), (struct sockaddr *)&clientaddr_in);
+  }
 
-  addToLog("ServerUDP; ", buffer, inet_ntoa(clientaddr_in.sin_addr), "s", PUERTO);
-  freeaddrinfo(res);
-
-	nc = sendto (s, &reqaddr, sizeof(struct in_addr),
+  //si no es ninguno => enviarError OPERACIONILEGAL
+	nc = sendto (s, nombreFichero, BUFFERSIZE,
 			0, (struct sockaddr *)&clientaddr_in, addrlen);
 	if ( nc == -1) {
     perror("serverUDP");
     printf("%s: sendto error\n", "serverUDP");
     return;
   }
- }
+}

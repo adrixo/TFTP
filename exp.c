@@ -110,3 +110,19 @@ main:
 14. cerramos ls_tcp y s_udp
   close(ls_TCP);
   close(s_UDP);
+
+
+
+
+
+SERVERUDP, s_udp, buffer, clientaddr_in (rellenado en recvfrom)
+1. rellenamos
+  struct in_addr reqaddr;	/* for requested host's address */
+  struct hostent *hp;		/* pointer to host info for requested host */
+  int nc, errcode;
+
+  struct addrinfo hints, *res;
+
+  int addrlen;
+
+  addrlen = sizeof(struct sockaddr_in);

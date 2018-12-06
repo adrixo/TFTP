@@ -490,6 +490,7 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 		reqaddr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
 	}
   freeaddrinfo(res);
+  addToLog("UDP ", char * hostname, int ip, char * protocol, int port)
 
 	nc = sendto (s, &reqaddr, sizeof(struct in_addr),
 			0, (struct sockaddr *)&clientaddr_in, addrlen);
