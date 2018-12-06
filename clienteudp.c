@@ -213,7 +213,7 @@ char *argv[];
     else {
       alarm(0);
       /* Print out response. */
-      // si no hay error
+      // si no hay error:
 
       if(argv[2][0] == 'l'){
         printf("Enviando %s...\n", msg);
@@ -223,6 +223,8 @@ char *argv[];
         printf("Recibiendo %s...\n", msg);
         //clientUDPRecibeFichero
       }
+      if(getPacketType(msg)==5)
+        printMSG(msg);
 
       break;
     }

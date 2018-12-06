@@ -40,11 +40,11 @@ int main(argc, argv)
 int argc;
 char *argv[];
 {
-    int s;				/* connected socket descriptor */
-   	struct addrinfo hints, *res;
-    long timevar;			/* contains time returned by time() */
-    struct sockaddr_in myaddr_in;	/* for local socket address */
-    struct sockaddr_in servaddr_in;	/* for server socket address */
+  int s;				/* connected socket descriptor */
+  struct addrinfo hints, *res;
+  long timevar;			/* contains time returned by time() */
+  struct sockaddr_in myaddr_in;	/* for local socket address */
+  struct sockaddr_in servaddr_in;	/* for server socket address */
 	int addrlen, i, j, errcode;
     /* This example uses TAM_BUFFER byte messages. */
 	char buf[TAM_BUFFER];
@@ -71,22 +71,22 @@ char *argv[];
 
 	/* Get the host information for the hostname that the
 	 * user passed in. */
-      memset (&hints, 0, sizeof (hints));
-      hints.ai_family = AF_INET;
- 	 /* esta funci�n es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
-    errcode = getaddrinfo (argv[1], NULL, &hints, &res);
-    if (errcode != 0){
-			/* Name was not found.  Return a
+  memset (&hints, 0, sizeof (hints));
+  hints.ai_family = AF_INET;
+ 	/* esta funci�n es la recomendada para la compatibilidad con IPv6 gethostbyname queda obsoleta*/
+  errcode = getaddrinfo (argv[1], NULL, &hints, &res);
+  if (errcode != 0){
+		/* Name was not found.  Return a
 			 * special value signifying the error. */
-		fprintf(stderr, "%s: No es posible resolver la IP de %s\n",
-				argv[0], argv[1]);
+    fprintf(stderr, "%s: No es posible resolver la IP de %s\n",
+		argv[0], argv[1]);
 		exit(1);
-        }
-    else {
+  }
+  else {
 		/* Copy address of host */
 		servaddr_in.sin_addr = ((struct sockaddr_in *) res->ai_addr)->sin_addr;
-	    }
-    freeaddrinfo(res);
+	}
+  freeaddrinfo(res);
 
     /* puerto del servidor en orden de red*/
 	servaddr_in.sin_port = htons(PUERTO);
@@ -111,7 +111,7 @@ char *argv[];
 		perror(argv[0]);
 		fprintf(stderr, "%s: unable to read socket address\n", argv[0]);
 		exit(1);
-	 }
+	}
 
 	/* Print out a startup message for the user. */
 	time(&timevar);
@@ -154,7 +154,7 @@ char *argv[];
 		 */
 	while (i = recv(s, buf, TAM_BUFFER, 0)) {
 		if (i == -1) {
-            perror(argv[0]);
+      perror(argv[0]);
 			fprintf(stderr, "%s: error reading result\n", argv[0]);
 			exit(1);
 		}
@@ -175,10 +175,10 @@ char *argv[];
 		while (i < TAM_BUFFER) {
 			j = recv(s, &buf[i], TAM_BUFFER-i, 0);
 			if (j == -1) {
-                     perror(argv[0]);
-			         fprintf(stderr, "%s: error reading result\n", argv[0]);
-			         exit(1);
-               }
+        perror(argv[0]);
+			  fprintf(stderr, "%s: error reading result\n", argv[0]);
+			  exit(1);
+      }
 			i += j;
 		}
 			/* Print out message indicating the identity of this reply. */

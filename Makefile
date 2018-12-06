@@ -14,12 +14,15 @@ servidor: servidor.o
 
 servidorSimplificado: servidorSimplificado.o
 	${CC} ${CFLAGS} -o $@ servidorSimplificado.o ${LIBS}
-	
+
 clientcp: clientcp.o
 	${CC} ${CFLAGS} -o $@ clientcp.o ${LIBS}
 
 clientudp: clientudp.o
 	${CC} ${CFLAGS} -o $@ clientudp.o ${LIBS}
+
+cliente: cliente.o
+	${CC} ${CFLAGS} -o $@ cliente.o ${LIBS}
 
 clean:
 	rm *.o ${PROGS}
