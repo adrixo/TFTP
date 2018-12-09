@@ -51,7 +51,16 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in);
 void errout(char *);		/* declare error out routine */
 
 int FIN = 0;             /* Para el cierre ordenado */
-void finalizar(){ FIN = 1; }
+void finalizar()
+{
+  printf("Programa Terminado SIGTERM\n");
+  FIN = 1;
+}
+
+void handler()
+{
+ printf("Alarma recibida \n");
+}
 
 int main(argc, argv)
 int argc;
@@ -92,7 +101,7 @@ char *argv[];
 
   char buffer[BUFFERSIZE];	/* buffer for packets to be read into */
 
-  struct sigaction vec;
+  struct sigaction vec,vec2;
 
   /* Create the listen socket. */
 	ls_TCP = socket (AF_INET, SOCK_STREAM, 0);
@@ -210,7 +219,15 @@ char *argv[];
       fprintf(stderr,"%s: unable to register the SIGTERM signal\n", argv[0]);
       exit(1);
     }
-    if(VERBOSE) printf("Sigactions...\n");
+
+    vec.sa_handler = (void *) handler;
+    vec.sa_flags = 0;
+    if ( sigaction(SIGALRM, &vec, (struct sigaction *) 0) == -1) {
+      perror(" sigaction(SIGALRM)");
+      fprintf(stderr,"%s: unable to register the SIGALRM signal\n", argv[0]);
+      exit(1);
+    }
+    //if(VERBOSE) printf("Sigactions...\n");
 
 		while (!FIN) {
       /* Meter en el conjunto de sockets los sockets UDP y TCP */
@@ -232,7 +249,7 @@ char *argv[];
           FIN=1;
           close (ls_TCP);
           close (s_UDP);
-          perror("\nFinalizando el servidor. Se�al recibida en elect\n ");
+          perror("\nFinalizando el servidor. Senal recibida en elect\n ");
         }
       }
       else {
@@ -325,11 +342,11 @@ char *argv[];
  */
 void serverTCP(int s, struct sockaddr_in clientaddr_in)
 {
-	int reqcnt = 0;		/* keeps count of number of requests */
-	char buf[TAM_BUFFER];		/* This example uses TAM_BUFFER byte messages. */
-	char hostname[MAXHOST];		/* remote host's name string */
+  int reqcnt = 0;		/* keeps count of number of requests */
+  char buf[TAM_BUFFER];		/* This example uses TAM_BUFFER byte messages. */
+  char hostname[MAXHOST];		/* remote host's name string */
 
-	int len, len1, status;
+  int len, len1, status;
   struct hostent *hp;		/* pointer to host info for remote host */
   long timevar;			/* contains time returned by time() */
 
@@ -362,19 +379,18 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	 * that this program could easily be ported to a host
 	 * that does require it.
 	 */
-	printf("Startup from %s port %u at %s",
-	hostname, ntohs(clientaddr_in.sin_port), (char *) ctime(&timevar));
+  printf("Startup from %s port %u at %s",
+    hostname, ntohs(clientaddr_in.sin_port), (char *) ctime(&timevar));
 
 	/* Set the socket for a lingering, graceful close.
 	 * This will cause a final close of this socket to wait until all of the
 	 * data sent on it has been received by the remote host.
 	 */
-	linger.l_onoff  =1;
-	linger.l_linger =1;
-	if (setsockopt(s, SOL_SOCKET, SO_LINGER, &linger,
-					sizeof(linger)) == -1) {
-		errout(hostname);
-	}
+  linger.l_onoff  =1;
+  linger.l_linger =1;
+  if (setsockopt(s, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger)) == -1) {
+    errout(hostname);
+  }
 
 	/* Go into a loop, receiving requests from the remote
 	 * client.  After the client has sent the last request,
@@ -386,8 +402,8 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	 * how the server will know that no more requests will
 	 * follow, and the loop will be exited.
 	 */
-	while (len = recv(s, buf, TAM_BUFFER, 0)) {
-	  if (len == -1) errout(hostname); /* error from recv */
+  while (len = recv(s, buf, TAM_BUFFER, 0)) {
+    if (len == -1) errout(hostname); /* error from recv */
 	  /* The reason this while loop exists is that there
 		 * is a remote possibility of the above recv returning
 		 * less than TAM_BUFFER bytes.  This is because a recv returns
@@ -402,20 +418,20 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 		 * next recv at the top of the loop will start at
 		 * the begining of the next request.
 		 */
-  	while (len < TAM_BUFFER) {
-  		len1 = recv(s, &buf[len], TAM_BUFFER-len, 0);
-  		if (len1 == -1) errout(hostname);
-  		len += len1;
-  	}
+    while (len < TAM_BUFFER) {
+      len1 = recv(s, &buf[len], TAM_BUFFER-len, 0);
+      if (len1 == -1) errout(hostname);
+      len += len1;
+    }
   		/* Increment the request count. */
-  	reqcnt++;
+    reqcnt++;
   		/* This sleep simulates the processing of the
   		 * request that a real server might do.
   		 */
-  	sleep(1);
+    sleep(1);
   	/* Send a response back to the client. */
-  	if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) errout(hostname);
-	}
+    if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) errout(hostname);
+  }
 
 	/* The loop has terminated, because there are no
 	 * more requests to be serviced.  As mentioned above,
@@ -427,17 +443,17 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	 * times printed in the log file to reflect more accurately
 	 * the length of time this connection was used.
 	 */
-	close(s);
+  close(s);
 
 	/* Log a finishing message. */
-	time (&timevar);
+  time (&timevar);
 	/* The port number must be converted first to host byte
 	 * order before printing.  On most hosts, this is not
 	 * necessary, but the ntohs() call is included here so
 	 * that this program could easily be ported to a host
 	 * that does require it.
 	 */
-	printf("Completed %s port %u, %d requests, at %s\n",
+  printf("Completed %s port %u, %d requests, at %s\n",
 		hostname, ntohs(clientaddr_in.sin_port), reqcnt, (char *) ctime(&timevar));
 }
 
@@ -491,7 +507,6 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
   else {
     sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
   }
-  //sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
 }
 
 
@@ -564,19 +579,34 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
     if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
     sendto (s, packet, 4+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
+    alarm(TIMEOUT);
     cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
-    if(getPacketType(asentimiento)==5){
-      printErrorMsg(asentimiento);
-      fclose(fichero);
-      return;
-    }
-
     if(cc == -1){
-      if(VERBOSE) printf("Error al recibir un mensaje");
-      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+      if (errno == EINTR) {
+  				/* Alarm went off and aborted the receive.
+  				 * Need to retry the request if we have
+  				 * not already exceeded the retry limit.
+  				 */
+        if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
+        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
+      }
+      else {
+        if(VERBOSE) printf("Error al recibir un mensaje\n");
+        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
+      }
       fclose (fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
+      return;
+    }
+    alarm(0);
+
+    //Para comprobar el timeout
+    //if(packetNumber == 5){ return;}
+
+    if(getPacketType(asentimiento)==5){
+      printErrorMsg(asentimiento);
+      fclose(fichero);
       return;
     }
 
@@ -646,7 +676,30 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 
   while(fin!=2){
     packetNumber++;
+
+    alarm(TIMEOUT);
     cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(cc == -1){
+      if (errno == EINTR) {
+  				/* Alarm went off and aborted the receive.
+  				 * Need to retry the request if we have
+  				 * not already exceeded the retry limit.
+  				 */
+        if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
+        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
+      }
+      else {
+        if(VERBOSE) printf("Error al recibir un mensaje\n");
+        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
+      }
+      fclose(fichero);
+      return;
+    }
+    alarm(0);
+
+    //Para comprobar el timeout
+    //if(packetNumber==5) { sleep(7); return;}
+
     if(getPacketType(parteFichero)==5){
       printErrorMsg(parteFichero);
       fclose(fichero);
@@ -654,13 +707,6 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
     }
 
     if(VERBOSE) printf("Recibiendo paquete %d...\n", packetNumber);
-
-    if(cc == -1){
-      if(VERBOSE) printf("Error al recibir un mensaje\n");
-      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
-      fclose(fichero);
-      return;
-    }
 
     if(getPacketType(parteFichero)!=3){
       if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));

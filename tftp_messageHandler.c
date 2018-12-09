@@ -12,6 +12,8 @@ typedef unsigned char BYTE;
 #define OPERACIONILEGAL 4
 #define FICHEROYANOEXISTE 6
 
+#define TIMEOUT 4
+
 /*
  * Constructores de los paquetes
  */
