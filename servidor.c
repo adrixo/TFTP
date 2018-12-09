@@ -567,7 +567,7 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
     cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
     if(getPacketType(asentimiento)==5){
       printErrorMsg(asentimiento);
-  		fclose(fichero);
+      fclose(fichero);
       return;
     }
 
@@ -649,7 +649,7 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
     cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
     if(getPacketType(parteFichero)==5){
       printErrorMsg(parteFichero);
-  		fclose(fichero);
+      fclose(fichero);
       return;
     }
 
