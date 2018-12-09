@@ -25,14 +25,14 @@ void addFileTransferInfoToLog(int type, char * fileName, char * ip)
 	fd = fopen("log.txt", "a");
 	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
 
-	if(type==1) fprintf(fd, "Enviando %s a %s\n", fileName, ip );
-	if(type==2) fprintf(fd, "Recibiendo %s de %s\n", fileName, ip );
+	if(type==1) fprintf(fd, "Recibiendo %s de %s\n", fileName, ip );
+	if(type==2) fprintf(fd, "Enviando %s a %s\n", fileName, ip );
 
 	fclose(fd);
 }
 
 //Ejemplo: sendErrorMSG(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha podido encontrar");
-void sendErrorMSG(int s, struct sockaddr_in clientaddr_in, int codigoError, char * errMsg){
+void sendErrorMSG_UDP(int s, struct sockaddr_in clientaddr_in, int codigoError, char * errMsg){
 	BYTE * msg;
 	int addrlen;
 	int nc;
@@ -40,7 +40,7 @@ void sendErrorMSG(int s, struct sockaddr_in clientaddr_in, int codigoError, char
 	addrlen = sizeof(struct sockaddr_in);
 
 	msg = ErrorMsg(codigoError, errMsg);
-	nc = sendto (s, msg, BUFFERSIZE,0, (struct sockaddr *)&clientaddr_in, addrlen);
+	nc = sendto (s, msg, BUFFERSIZE, 0, (struct sockaddr *)&clientaddr_in, addrlen);
 	if ( nc == -1) {
 		perror("serverUDP");
 		printf("%s: sendto error\n", "serverUDP");

@@ -2,7 +2,7 @@
  *          		S E R V I D O R
  *
  *	This is an example program that demonstrates the use of
- *	sockets TCP and UDP as an IPC mechanism.  
+ *	sockets TCP and UDP as an IPC mechanism.
  *
  */
 #include <sys/types.h>
@@ -55,20 +55,20 @@ char *argv[];
 		char *h;
     int s_TCP, s_UDP;		/* connected socket descriptor */
     int ls_TCP;				/* listen socket descriptor */
-    
+
     int cc;				    /* contains the number of bytes read */
-     
+
     struct sigaction sa = {.sa_handler = SIG_IGN}; /* used to ignore SIGCHLD */
-    
+
     struct sockaddr_in myaddr_in;	/* for local socket address */
     struct sockaddr_in clientaddr_in;	/* for peer socket address */
 	int addrlen;
-	
+
     fd_set readmask;
     int numfds,s_mayor;
-    
+
     char buffer[BUFFERSIZE];	/* buffer for packets to be read into */
-    
+
     struct sigaction vec;
 
 		/* Create the listen socket. */
@@ -78,7 +78,7 @@ char *argv[];
 		fprintf(stderr, "%s: unable to create socket TCP\n", argv[0]);
 		exit(1);
 	}
-	/* clear out address structures */
+	/* clear out address structures */buena
 	memset ((char *)&myaddr_in, 0, sizeof(struct sockaddr_in));
    	memset ((char *)&clientaddr_in, 0, sizeof(struct sockaddr_in));
 
@@ -114,8 +114,8 @@ char *argv[];
 		fprintf(stderr, "%s: unable to listen on socket\n", argv[0]);
 		exit(1);
 	}
-	
-	
+
+
 	/* Create the socket UDP. */
 	s_UDP = socket (AF_INET, SOCK_DGRAM, 0);
 	if (s_UDP == -1) {
@@ -173,7 +173,7 @@ char *argv[];
             fprintf(stderr,"%s: unable to register the SIGCHLD signal\n", argv[0]);
             exit(1);
             }
-            
+
 		    /* Registrar SIGTERM para la finalizacion ordenada del programa servidor */
         vec.sa_handler = (void *) finalizar;
         vec.sa_flags = 0;
@@ -182,16 +182,16 @@ char *argv[];
             fprintf(stderr,"%s: unable to register the SIGTERM signal\n", argv[0]);
             exit(1);
             }
-        
+
 		while (!FIN) {
             /* Meter en el conjunto de sockets los sockets UDP y TCP */
             FD_ZERO(&readmask);
             FD_SET(ls_TCP, &readmask);
             FD_SET(s_UDP, &readmask);
-            /* 
-            Seleccionar el descriptor del socket que ha cambiado. Deja una marca en 
+            /*
+            Seleccionar el descriptor del socket que ha cambiado. Deja una marca en
             el conjunto de sockets (readmask)
-            */ 
+            */
     	    if (ls_TCP > s_UDP) s_mayor=ls_TCP;
     		else s_mayor=s_UDP;
 
@@ -200,10 +200,10 @@ char *argv[];
                     FIN=1;
 		            close (ls_TCP);
 		            close (s_UDP);
-                    perror("\nFinalizando el servidor. SeÃal recibida en elect\n "); 
+                    perror("\nFinalizando el servidor. Seï¿½al recibida en elect\n ");
                 }
             }
-           else { 
+           else {
 
                 /* Comprobamos si el socket seleccionado es el socket TCP */
                 if (FD_ISSET(ls_TCP, &readmask)) {
@@ -269,19 +269,19 @@ char *argv[];
                 else if (getPacketType(buffer)==2) serverUDPEnviaFichero(s_UDP, getFilename(buffer), clientaddr_in);
 								else{
 									h = ErrorMsg(NODEFINIDO, "Tipo paquete incorrecto");
-									sendto (s_UDP, h, 2+2+strlen("Tipo paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);	
+									sendto (s_UDP, h, 2+2+strlen("Tipo paquete incorrecto")+1,0, (struct sockaddr *)&clientaddr_in, addrlen);
 									printf("Tipo paquete incorrecto\n");
 									exit (1);
 								}
              }
           }
-		}   /* Fin del bucle infinito de atención a clientes */
+		}   /* Fin del bucle infinito de atenciï¿½n a clientes */
         /* Cerramos los sockets UDP y TCP */
         close(ls_TCP);
         close(s_UDP);
-    
+
         printf("\nFin de programa servidor!\n");
-        
+
 	default:		/* Parent process comes here. */
 		exit(0);
 	}
@@ -307,16 +307,16 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	int len, len1, status;
     struct hostent *hp;		/* pointer to host info for remote host */
     long timevar;			/* contains time returned by time() */
-    
+
     struct linger linger;		/* allow a lingering, graceful close; */
     				            /* used when setting SO_LINGER */
-    				
+
 	/* Look up the host information for the remote host
 	 * that we have connected with.  Its internet address
 	 * was returned by the accept call, in the main
 	 * daemon loop above.
 	 */
-	 
+
      status = getnameinfo((struct sockaddr *)&clientaddr_in,sizeof(clientaddr_in),
                            hostname,MAXHOST,NULL,0,0);
      if(status){
@@ -422,7 +422,7 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 void errout(char *hostname)
 {
 	printf("Connection with %s aborted on error\n", hostname);
-	exit(1);     
+	exit(1);
 }
 
 
@@ -438,19 +438,19 @@ void errout(char *hostname)
  */
 void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
 {
-  int i,n=0,fin=0; 
+  int i,n=0,fin=0;
 	int cc;				    /* contains the number of bytes read */
-	char * datosFichero; 
-	char * UltimosdatosFichero; 
+	char * datosFichero;
+	char * UltimosdatosFichero;
   char * h;
   char asentimiento[4];
-	int addrlen;  
+	int addrlen;
 	int tamanno;
 	int numPaquetes;
 	int restoPaquete;
   FILE * fichero;
   addrlen = sizeof(struct sockaddr_in);
-	char rutaFichero[25] = "ficherosTFTPserver/"; 
+	char rutaFichero[25] = "ficherosTFTPserver/";
 	strcat(rutaFichero,Nombrefichero);
 
   fichero = fopen(rutaFichero,"r");
@@ -477,9 +477,9 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
   while(fin!=2){
 		n++;
   	if(n<=numPaquetes){
-			fread(datosFichero, 512,1,fichero);	
+			fread(datosFichero, 512,1,fichero);
 			h = DATAPacket(n,datosFichero);
-		}	
+		}
   	else{
 			fin=1;
 			if(restoPaquete!=0) fread(UltimosdatosFichero, restoPaquete,1,fichero);
@@ -487,11 +487,11 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 			h = DATAPacket(n,UltimosdatosFichero);
 		}
 		sendto (s, h, 4+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
-	
+
 		cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 		printMSG(asentimiento);
 	  if(cc == -1){
-	  	sendErrorMSG(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");	
+	  	sendErrorMSG(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
 			fclose (fichero);
 			free(datosFichero);
 			free(UltimosdatosFichero);
@@ -525,14 +525,14 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 
 void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
 {
-  int n=0,fin=0; 
+  int n=0,fin=0;
 	int cc;				    /* contains the number of bytes read */
   char * h;
   char parteFichero[PACKETSIZE+4];
 	FILE * fichero;
-	int addrlen;  
+	int addrlen;
   addrlen = sizeof(struct sockaddr_in);
-	char rutaFichero[25] = "ficherosTFTPserver/"; 
+	char rutaFichero[25] = "ficherosTFTPserver/";
 	strcat(rutaFichero,Nombrefichero);
 
 	fichero = fopen(rutaFichero,"r");
@@ -543,7 +543,7 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 	}
   fichero = fopen(rutaFichero,"w");
 	h = ACK(0);
-	sendto (s, h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);	
+	sendto (s, h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
   while(fin!=2){
 		n++;
@@ -566,10 +566,10 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 			fclose(fichero);
 			return;
 		}
- 
-		fwrite(getDataMSG(parteFichero), getDataLength(parteFichero), 1, fichero); 
+
+		fwrite(getDataMSG(parteFichero), getDataLength(parteFichero), 1, fichero);
     h = ACK(n);
-	  sendto (s, h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);	
+	  sendto (s, h, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
     if(getDataLength(parteFichero)<512) fin=2;
   }
@@ -581,4 +581,3 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 
 void serverTCPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
 void serverTCPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
-

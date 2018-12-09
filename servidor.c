@@ -32,6 +32,10 @@ extern int errno;
 #include "tftp_messageHandler.c"
 #include "utils.c"
 
+
+void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
+void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
+
 /*
  *			M A I N
  *
@@ -285,6 +289,7 @@ char *argv[];
           if ( cc == -1) {
             perror(argv[0]);
             printf("%s: recvfrom error\n", argv[0]);
+            sendErrorMSG_UDP(s_UDP, clientaddr_in, NODEFINIDO, "Mensaje mal entregado");
             exit (1);
             }
           /* Make sure the message received is
@@ -468,21 +473,217 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
   char *nombreFichero;
   addrlen = sizeof(struct sockaddr_in);
 
-  printMSG(buffer);
   if(getPacketType(buffer)==1){
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-    //serverUDPRecibeFichero(s,getFilename(msg), clientaddr_in);
+    serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in);
   }
   if(getPacketType(buffer)==2){
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-    //serverUDPEnviaFichero(s,getFilename(msg), clientaddr_in);
+    serverUDPEnviaFichero(s, getFilename(buffer), clientaddr_in);
+  }
+  if(getPacketType(buffer)==5){
+    printError(getErrorCode(buffer));
   }
   else {
-    sendErrorMSG(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
+    sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
   }
-  sendErrorMSG(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
+  //sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
+}
+
+
+void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
+{
+  int i, packetNumber=0,fin=0;
+  int cc;				    /* contains the number of bytes read */
+
+  char * datosFichero;
+  char * ultimosDatosFichero;
+  char * packet;
+  char asentimiento[4];
+
+  int addrlen;
+  int tamanno;
+  int numPaquetes;
+  int restoPaquete;
+
+  FILE * fichero;
+
+  addrlen = sizeof(struct sockaddr_in);
+
+  char rutaFichero[25] = "ficherosTFTPserver/";
+  strcat(rutaFichero,Nombrefichero);
+
+
+  if(VERBOSE) printf("Enviando fichero %s...\n", Nombrefichero);
+  fichero = fopen(rutaFichero,"r");
+  if(fichero==NULL){
+    if(VERBOSE) printf("No se ha encontrado el fichero.\n");
+    sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+    return;
+  }
+
+  fseek(fichero, 0L, SEEK_END );
+  tamanno=ftell(fichero);
+  numPaquetes=tamanno/512;
+  restoPaquete=tamanno%512;
+
+  rewind(fichero);
+  datosFichero = calloc(512,sizeof(char));
+
+  if(restoPaquete!=0)
+    ultimosDatosFichero = calloc(restoPaquete,sizeof(char));
+  else
+    ultimosDatosFichero = calloc(1,sizeof(char));
+
+  if(datosFichero==NULL || ultimosDatosFichero==NULL){
+    if(VERBOSE) printf("Error al hacer el calloc.\n");
+    sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
+    fclose (fichero);
+    return;
+  }
+
+  while(fin!=2){
+    packetNumber++;
+
+    if(packetNumber<=numPaquetes){
+      fread(datosFichero, 512,1,fichero);
+      packet = DATAPacket(packetNumber,datosFichero);
+    }
+    else {
+      fin=1;
+      if(restoPaquete!=0)
+        fread(ultimosDatosFichero, restoPaquete,1,fichero);
+      else ultimosDatosFichero[0]=0;
+        packet = DATAPacket(packetNumber,ultimosDatosFichero);
+    }
+
+    if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
+    sendto (s, packet, 4+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+    cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(getPacketType(asentimiento)==5){
+      printErrorMsg(asentimiento);
+  		fclose(fichero);
+      return;
+    }
+
+    if(cc == -1){
+      if(VERBOSE) printf("Error al recibir un mensaje");
+      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+      fclose (fichero);
+      free(datosFichero);
+      free(ultimosDatosFichero);
+      return;
+    }
+
+    if(getPacketType(asentimiento)!=4){
+      if(VERBOSE) printf("Se esperaba ack");
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
+      fclose(fichero);
+      free(datosFichero);
+      free(ultimosDatosFichero);
+      return;
+    }
+
+    if(VERBOSE) printf("ACK paquete: %d\n", getPacketNumber(asentimiento));
+    if(getPacketNumber(asentimiento)!=packetNumber){
+      if(VERBOSE) printf("Numero asentimiento incorrecto");
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      fclose(fichero);
+      free(datosFichero);
+      free(ultimosDatosFichero);
+      return;
+    }
+    if(fin==1)
+    fin=2;
+  }
+
+  if(VERBOSE) printf("Envio concluido\n");
+
+  fclose (fichero);
+  free(datosFichero);
+  free(ultimosDatosFichero);
+
+  return;
+}
+
+
+
+void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
+{
+  int packetNumber=0,fin=0;
+  int cc;				    /* contains the number of bytes read */
+
+  char * packet;
+  char parteFichero[PACKETSIZE+4];
+
+  FILE * fichero;
+
+  int addrlen;
+  addrlen = sizeof(struct sockaddr_in);
+
+  char rutaFichero[25] = "ficherosTFTPserver/";
+  strcat(rutaFichero,Nombrefichero);
+
+  if(VERBOSE) printf("Recibiendo fichero %s...\n", Nombrefichero);
+  fichero = fopen(rutaFichero,"r");
+  if(fichero!=NULL){
+    if(VERBOSE) printf("Error: El fichero ya existe.\n");
+    sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
+    fclose(fichero);
+    return;
+  }
+
+  fichero = fopen(rutaFichero,"w");
+  packet = ACK(0);
+
+  if(VERBOSE) printf("ACK 0\n");
+  sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+  while(fin!=2){
+    packetNumber++;
+    cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(getPacketType(parteFichero)==5){
+      printErrorMsg(parteFichero);
+  		fclose(fichero);
+      return;
+    }
+
+    if(VERBOSE) printf("Recibiendo paquete %d...\n", packetNumber);
+
+    if(cc == -1){
+      if(VERBOSE) printf("Error al recibir un mensaje\n");
+      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+      fclose(fichero);
+      return;
+    }
+
+    if(getPacketType(parteFichero)!=3){
+      if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
+      fclose(fichero);
+      return;
+    }
+
+    if(getPacketNumber(parteFichero)!=packetNumber){
+      if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      fclose(fichero);
+      return;
+    }
+
+    fwrite(getDataMSG(parteFichero), getDataLength(parteFichero), 1, fichero);
+    packet = ACK(packetNumber);
+    sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+    if(getDataLength(parteFichero)<512)
+      fin=2;
+  }
+  if(VERBOSE) printf("Fichero recibido.\n");
+  fclose (fichero);
+  return;
 }

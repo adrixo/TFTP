@@ -31,6 +31,8 @@
 
 extern int errno;
 
+#define VERBOSE 1
+
 #define ADDRNOTFOUND	0xffffffff	/* value returned for unknown host */
 #define RETRIES	5		/* number of times to retry before givin up */
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
@@ -41,6 +43,11 @@ extern int errno;
 
 #include "tftp_messageHandler.c"
 #include "utils.c"
+
+
+void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in);
+void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in);
+
 /*
  *			H A N D L E R
  *
@@ -217,19 +224,17 @@ char *argv[];
   if(udp){
     n_retry=RETRIES;
     BYTE *msg;
+    /* Iniciamos la peticion: */
+    //printf("->%c\n", argv[2][0]);
+    if(argv[3][0] == 'l'){
+      clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in);
+    }
+    if(argv[3][0] == 'r'){
+      clientUDPRecibeFichero(s, argv[4], "octec", servaddr_in);
+    }
+/*
   	while (n_retry > 0) {
-  		/* Iniciamos la peticion: */
-      //printf("->%c\n", argv[2][0]);
-      if(argv[3][0] == 'l'){
-        printf("Generando peticion de lectura\n");
-        msg = RRQ(argv[4], "octet");
-      }
-      if(argv[3][0] == 'r'){
-        printf("Generando peticion de recibir\n");
-        msg = WRQ(argv[4], "octet");
-      }
-
-      if (sendto (s, msg, BUFFERSIZE, 0, (struct sockaddr *)&servaddr_in,
+      /*if (sendto (s, msg, BUFFERSIZE, 0, (struct sockaddr *)&servaddr_in,
   				sizeof(struct sockaddr_in)) == -1) {
     		perror(argv[0]);
     		fprintf(stderr, "%s: unable to send request\n", argv[0]);
@@ -239,16 +244,16 @@ char *argv[];
   		 * gets lost.  After all, UDP does not guarantee
   		 * delivery.
   		 */
-  	  alarm(TIMEOUT);
+  	  /*alarm(TIMEOUT);
   		/* Wait for the reply to come in. */
-      if (recvfrom (s, msg, BUFFERSIZE, 0,
+      /*if (recvfrom (s, msg, BUFFERSIZE, 0,
   				(struct sockaddr *)&servaddr_in, &addrlen) == -1) {
     		if (errno == EINTR) {
     				/* Alarm went off and aborted the receive.
     				 * Need to retry the request if we have
     				 * not already exceeded the retry limit.
     				 */
-          printf("attempt %d (retries %d).\n", n_retry, RETRIES);
+    /*      printf("attempt %d (retries %d).\n", n_retry, RETRIES);
     	 		n_retry--;
         }
         else  {
@@ -260,13 +265,13 @@ char *argv[];
         alarm(0);
         /* Print out response. */
         // si no hay error:
-
+/*
         if(argv[3][0] == 'l'){
-          printf("Enviando %s...\n", msg);
-          //clientUDPEnviaFichero();
+          printf("Enviando %s...\n", argv[4]);
+          clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in);
         }
         if(argv[3][0] == 'r'){
-          printf("Recibiendo %s...\n", msg);
+          printf("Recibiendo %s...\n", argv[4]);
           //clientUDPRecibeFichero
         }
         if(getPacketType(msg)==5)
@@ -279,7 +284,7 @@ char *argv[];
     if (n_retry == 0) {
       printf("Unable to get response from");
       printf(" %s after %d attempts.\n", argv[1], RETRIES);
-    }
+    }*/
   }
 
   else if (tcp){
@@ -348,4 +353,226 @@ char *argv[];
   	time(&timevar);
   	printf("All done at %s", (char *)ctime(&timevar));
   }
+}
+
+
+void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in)
+{
+  int i,packetNumber=0,fin=0;
+  int cc;				    /* contains the number of bytes read */
+	char * datosFichero;
+	char * UltimosdatosFichero;
+  char * packet;
+  char asentimiento[4];
+	int addrlen;
+	int tamanno;
+	int numPaquetes;
+	int restoPaquete;
+  FILE * fichero;
+
+  addrlen = sizeof(struct sockaddr_in);
+	char rutaFichero[25] = "ficherosTFTPcliente/";
+	strcat(rutaFichero,Nombrefichero);
+
+  if(VERBOSE)  printf("Enviando fichero %s...\n", Nombrefichero);
+  fichero = fopen(rutaFichero,"r");
+  if(fichero==NULL){
+    if(VERBOSE)  printf("No se ha encontrado el fichero %s\n", Nombrefichero);
+		//sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+		return;
+	}
+
+	packet = WRQ(Nombrefichero, mode);
+	sendto (s, packet, 2+strlen(Nombrefichero)+1+strlen(mode)+1,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+	cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+  if(getPacketType(asentimiento)==5){
+    printErrorMsg(asentimiento);
+		fclose(fichero);
+    return;
+  }
+
+	if(cc == -1){
+    if(VERBOSE) printf("Error al recibir un mensaje\n");
+	  sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+		fclose(fichero);
+		return;
+	}
+
+  if(getPacketType(asentimiento)==5){
+    printErrorMsg(asentimiento);
+		fclose(fichero);
+    return;
+  }
+
+  if(getPacketType(asentimiento)!=4){
+    if(VERBOSE) printf("Se esperaba ack\n");
+    sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
+		fclose(fichero);
+		return;
+	}
+
+  if(VERBOSE) printf("ACK paquete: %d\n", getPacketNumber(asentimiento));
+	if(getPacketNumber(asentimiento)!=packetNumber){
+    if(VERBOSE) printf("Numero asentimiento incorrecto");
+    sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+		fclose(fichero);
+		return;
+	}
+
+	fseek(fichero, 0L, SEEK_END );
+	tamanno=ftell(fichero);
+	numPaquetes=tamanno/512;
+	restoPaquete=tamanno%512;
+
+  rewind(fichero);
+	datosFichero = calloc(512,sizeof(char));
+	if(restoPaquete!=0)
+    UltimosdatosFichero = calloc(restoPaquete,sizeof(char));
+	else
+    UltimosdatosFichero = calloc(1,sizeof(char));
+
+  if(datosFichero==NULL || UltimosdatosFichero==NULL){
+    if(VERBOSE) printf("Error al hacer el calloc.\n");
+    sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
+		fclose (fichero);
+  	return;
+  }
+
+  while(fin!=2){
+		packetNumber++;
+  	if(packetNumber<=numPaquetes){
+			fread(datosFichero, 512,1,fichero);
+			packet = DATAPacket(packetNumber,datosFichero);
+		}
+
+  	else{
+			fin=1;
+			if(restoPaquete!=0)
+        fread(UltimosdatosFichero, restoPaquete,1,fichero);
+			else UltimosdatosFichero[0]=0;
+			   packet = DATAPacket(packetNumber,UltimosdatosFichero);
+		}
+
+    if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
+	  sendto (s, packet, 2+2+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+		cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(getPacketType(asentimiento)==5){
+      printErrorMsg(asentimiento);
+  		fclose(fichero);
+      return;
+    }
+
+    if(cc == -1){
+      if(VERBOSE) printf("Error al recibir un mensaje\n");
+      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+      fclose (fichero);
+      free(datosFichero);
+      free(UltimosdatosFichero);
+      return;
+    }
+
+    if(getPacketType(asentimiento)!=4){
+      if(VERBOSE) printf("Se esperaba ack\n");
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
+			fclose(fichero);
+			free(datosFichero);
+			free(UltimosdatosFichero);
+			return;
+		}
+
+    if(VERBOSE) printf("ACK paquete: %d\n", getPacketNumber(asentimiento));
+		if(getPacketNumber(asentimiento)!=packetNumber){
+      if(VERBOSE) printf("Numero asentimiento incorrecto\n");
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+			fclose(fichero);
+			free(datosFichero);
+			free(UltimosdatosFichero);
+			return;
+		}
+
+		if(fin==1)
+      fin=2;
+  }
+
+  if(VERBOSE) printf("Envio concluido\n");
+
+  fclose (fichero);
+	free(datosFichero);
+	free(UltimosdatosFichero);
+	return;
+}
+
+
+void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in)
+{
+  int packetNumber=0,fin=0;
+  int cc;				    /* contains the number of bytes read */
+
+  char * packet;
+  char parteFichero[PACKETSIZE+4];
+
+	FILE * fichero;
+
+	int addrlen;
+  addrlen = sizeof(struct sockaddr_in);
+
+	char rutaFichero[25] = "ficherosTFTPcliente/";
+	strcat(rutaFichero,Nombrefichero);
+
+  if(VERBOSE)  printf("Recibiendo fichero %s...\n", Nombrefichero);
+	fichero = fopen(rutaFichero,"r");
+  if(fichero!=NULL){
+    if(VERBOSE)  printf("El fichero %s ya existe\n", Nombrefichero);
+		fclose(fichero);
+		return;
+	}
+
+  fichero = fopen(rutaFichero,"w");
+  packet = RRQ(Nombrefichero, mode);
+
+  sendto (s, packet, 2+strlen(Nombrefichero)+1+strlen(mode)+1,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+  while(fin!=2){
+		packetNumber++;
+		cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(getPacketType(parteFichero)==5){
+      printErrorMsg(parteFichero);
+  		fclose(fichero);
+      return;
+    }
+    if(VERBOSE) printf("Recibiendo paquete %d...\n", packetNumber);
+
+	  if(cc == -1){
+      if(VERBOSE) printf("Error al recibir un mensaje\n");
+      sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje");
+  		fclose (fichero);
+			return;
+		  }
+
+		if(getPacketType(parteFichero)!=3){
+      if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
+			fclose(fichero);
+			return;
+		}
+		if(getPacketNumber(parteFichero)!=packetNumber){
+      if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
+      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+			fclose(fichero);
+			return;
+		}
+
+		fwrite(getDataMSG(parteFichero), getDataLength(parteFichero), 1, fichero );
+    packet = ACK(packetNumber);
+	  sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+
+    if(getDataLength(parteFichero)<512)
+      fin=2;
+	}
+  if(VERBOSE) printf("Fichero recibido.\n");
+  fclose (fichero);
+
+	return;
 }

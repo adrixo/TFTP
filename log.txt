@@ -1,4 +1,0 @@
-Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 51224 date: Thu Dec  6 14:07:54 2018
-Recibiendo filename.txt de 127.0.0.1
-Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 37038 date: Thu Dec  6 14:07:56 2018
-Recibiendo filename.txt de 127.0.0.1

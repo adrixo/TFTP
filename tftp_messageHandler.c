@@ -450,24 +450,30 @@ char * getErrorMsg(BYTE *packet){
 void printError(int errCode){
 	switch(errCode){
 		case NODEFINIDO:
-			printf("Error: No definido");
+			printf("Error: No definido\n");
 			break;
 		case FICHERONOENCONTRADO:
-			printf("Error: Fichero no encontrado");
+			printf("Error: Fichero no encontrado\n");
 			break;
 		case DISCOLLENO:
-			printf("Error: Disco lleno");
+			printf("Error: Disco lleno\n");
 			break;
 		case OPERACIONILEGAL:
-			printf("Error: Operacion ilegal de TFTP");
+			printf("Error: Operacion ilegal de TFTP\n");
 			break;
 		case FICHEROYANOEXISTE:
-			printf("Error: El fichero no existe");
+			printf("Error: El fichero no existe\n");
 			break;
 		default:
-			printf("Error: No definido - %d", errCode);
+			printf("Error: No definido - %d\n", errCode);
 			break;
 	}
+}
+
+void printErrorMsg(BYTE *packet){
+		printf("Recibido mensaje de error: %s\n", getErrorMsg(packet));
+		printError(getErrorCode(packet));
+		printf("Operacion abortada.\n");
 }
 
 void printMSG(BYTE *packet){
