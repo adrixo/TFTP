@@ -577,6 +577,9 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
     }
 
     if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
+    printMSG(packet);
+    for(int i; i<512; i++)
+      printf("%c", packet[i]);
     sendto (s, packet, 4+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
     alarm(TIMEOUT);
