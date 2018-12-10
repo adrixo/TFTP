@@ -123,3 +123,149 @@ Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 34571 date: Su
 Enviando tux.jpg a 127.0.0.1
 Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47573 date: Sun Dec  9 22:35:59 2018
 Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 56222 date: Mon Dec 10 16:14:17 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 33991 date: Mon Dec 10 16:15:54 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46471 date: Mon Dec 10 16:16:34 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 54116 date: Mon Dec 10 16:20:34 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 42688 date: Mon Dec 10 16:20:54 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 53543 date: Mon Dec 10 16:27:30 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 50361 date: Mon Dec 10 16:28:43 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46683 date: Mon Dec 10 16:29:07 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 33496 date: Mon Dec 10 16:29:50 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 48462 date: Mon Dec 10 16:30:36 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 52747 date: Mon Dec 10 16:30:48 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 45035 date: Mon Dec 10 16:31:00 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 58788 date: Mon Dec 10 16:31:42 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 36243 date: Mon Dec 10 16:35:30 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 43516 date: Mon Dec 10 16:36:27 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47478 date: Mon Dec 10 16:36:29 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 45640 date: Mon Dec 10 16:36:48 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47343 date: Mon Dec 10 16:37:11 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 48653 date: Mon Dec 10 16:53:59 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46200 date: Mon Dec 10 16:54:10 2018
+Recibiendo ad.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 44304 date: Mon Dec 10 16:55:14 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 50309 date: Mon Dec 10 16:55:33 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 43234 date: Mon Dec 10 16:56:19 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 44123 date: Mon Dec 10 16:56:24 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 41292 date: Mon Dec 10 16:57:45 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46778 date: Mon Dec 10 16:58:28 2018
+Enviando 121.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 40857 date: Mon Dec 10 16:58:41 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 33881 date: Mon Dec 10 16:58:45 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 54840 date: Mon Dec 10 16:58:47 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46833 date: Mon Dec 10 16:58:51 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 34833 date: Mon Dec 10 16:59:23 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 35431 date: Mon Dec 10 16:59:48 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 58183 date: Mon Dec 10 16:59:51 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 49887 date: Mon Dec 10 16:59:53 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 34351 date: Mon Dec 10 17:00:01 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47789 date: Mon Dec 10 17:00:05 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 51446 date: Mon Dec 10 17:00:35 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 36024 date: Mon Dec 10 17:00:49 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 45707 date: Mon Dec 10 17:01:08 2018
+Enviando mundo.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 58950 date: Mon Dec 10 17:01:15 2018
+Enviando mundo.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 40744 date: Mon Dec 10 17:09:27 2018
+Enviando mundo.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 51148 date: Mon Dec 10 17:10:46 2018
+Enviando mundo.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 57233 date: Mon Dec 10 17:10:48 2018
+Enviando mundo.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47821 date: Mon Dec 10 17:11:37 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 39180 date: Mon Dec 10 17:13:01 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 49816 date: Mon Dec 10 17:13:33 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 45602 date: Mon Dec 10 17:14:02 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46069 date: Mon Dec 10 17:25:48 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 59718 date: Mon Dec 10 17:26:10 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 45494 date: Mon Dec 10 17:26:44 2018
+Enviando ad.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 47291 date: Mon Dec 10 17:27:06 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46122 date: Mon Dec 10 17:29:35 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 51924 date: Mon Dec 10 17:30:25 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 44333 date: Mon Dec 10 17:31:10 2018
+Enviando tux.jpg a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 33465 date: Mon Dec 10 17:47:35 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 55642 date: Mon Dec 10 17:49:54 2018
+Recibiendo xD.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 37746 date: Mon Dec 10 17:50:05 2018
+Recibiendo xD.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 52573 date: Mon Dec 10 17:50:06 2018
+Recibiendo xD.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 52484 date: Mon Dec 10 17:50:57 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 48510 date: Mon Dec 10 17:51:48 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 54023 date: Mon Dec 10 17:51:50 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 55875 date: Mon Dec 10 17:51:51 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 34178 date: Mon Dec 10 17:51:51 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46466 date: Mon Dec 10 17:51:52 2018
+Enviando xD.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 60058 date: Mon Dec 10 18:20:33 2018
+Enviando server.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 40851 date: Mon Dec 10 18:20:39 2018
+Enviando servidor.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 46228 date: Mon Dec 10 18:21:07 2018
+Recibiendo servidor.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 51484 date: Mon Dec 10 18:21:48 2018
+Enviando cliente.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 55232 date: Mon Dec 10 18:24:50 2018
+Enviando servidor.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 37184 date: Mon Dec 10 18:26:32 2018
+Enviando servidor.txt a 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 60113 date: Mon Dec 10 18:26:54 2018
+Recibiendo servidor.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 40370 date: Mon Dec 10 18:27:43 2018
+Recibiendo servidor.txt de 127.0.0.1
+Inicia peticion:  >> Hostname:  ip: 127.0.0.1 protocol: UDP Port: 52190 date: Mon Dec 10 18:28:10 2018
+Enviando servidor.txt a 127.0.0.1

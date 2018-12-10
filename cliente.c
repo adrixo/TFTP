@@ -37,7 +37,6 @@ extern int errno;
 #define RETRIES	5		/* number of times to retry before givin up */
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
 #define PUERTO 41921
-#define TIMEOUT 6
 #define MAXHOST 512
 #define TAM_BUFFER 10
 
@@ -104,7 +103,7 @@ char *argv[];
 	}
 
   if(argv[3][0] != 'l' )
-    if(argv[3][0] != 'r'){
+    if(argv[3][0] != 'e'){
 		  fprintf(stderr, "Mode should be <l> or <r>\n");
 		    exit(1);
 	  }
@@ -242,10 +241,10 @@ char *argv[];
     /* Iniciamos la peticion: */
     //printf("->%c\n", argv[2][0]);
     if(argv[3][0] == 'l'){
-      clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in);
-    }
-    if(argv[3][0] == 'r'){
       clientUDPRecibeFichero(s, argv[4], "octec", servaddr_in);
+    }
+    if(argv[3][0] == 'e'){
+      clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in);
     }
 /*
   	while (n_retry > 0) {
@@ -564,14 +563,14 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Recibiendo fichero %s...\n", Nombrefichero);
-    fichero = fopen(rutaFichero,"r");
+    fichero = fopen(rutaFichero,"rb");
   if(fichero!=NULL){
     if(VERBOSE)  printf("El fichero %s ya existe\n", Nombrefichero);
     fclose(fichero);
     return;
   }
 
-  fichero = fopen(rutaFichero,"w");
+  fichero = fopen(rutaFichero,"wb");
   packet = RRQ(Nombrefichero, mode);
 
   sendto (s, packet, 2+strlen(Nombrefichero)+1+strlen(mode)+1,0, (struct sockaddr *)&clientaddr_in, addrlen);
@@ -581,6 +580,8 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
 
     alarm(TIMEOUT);
     cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+
+    printf("clie len: %d\n", cc);
     if(cc == -1){
       if (errno == EINTR) {
   				/* Alarm went off and aborted the receive.
@@ -623,11 +624,11 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       return;
     }
 
-    fwrite(getDataMSG(parteFichero), getDataLength(parteFichero), 1, fichero );
+    fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero );
     packet = ACK(packetNumber);
     sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
-    if(getDataLength(parteFichero)<512)
+    if(cc-4<512)
     fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");

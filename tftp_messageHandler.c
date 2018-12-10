@@ -28,9 +28,9 @@ BYTE * ErrorMsg(int CODIGODEERROR, char *errMsg);
 int getPacketType(BYTE *packet);
 char * getFilename(BYTE *packet);
 int getPacketNumber(BYTE *packet);
-int getDataLength(BYTE *packet);
-int isLastPacket(BYTE *packet);
-char * getDataMSG(BYTE *packet);
+int getDataLength(BYTE *packet);//deprecated
+int isLastPacket(BYTE *packet);//deprecated
+char * getDataMSG(BYTE *packet, int dataLength);
 int getErrorCode(BYTE *packet);
 char * getErrorMsg(BYTE *packet);
 void printError(int errCode);
@@ -320,6 +320,8 @@ int getPacketNumber(BYTE *packet){
 	}
 }
 
+//Deprecated:
+//Antes se usaba esta funcion en para saber cuantos datos había en el paquete antes de encontrarse con un 0
 int getDataLength(BYTE *packet){
 	if(packet == NULL)
 	{
@@ -345,6 +347,8 @@ int getDataLength(BYTE *packet){
 	}
 }
 
+//Deprecated:
+//Antes se usaba esta funcion en conjuncion con getDataLength para comprobar el último paquete
 int isLastPacket(BYTE *packet){
 	if(packet == NULL)
 	{
@@ -366,7 +370,7 @@ int isLastPacket(BYTE *packet){
 
 }
 
-char * getDataMSG(BYTE *packet){
+char * getDataMSG(BYTE *packet, int dataLength){
 	if(packet == NULL)
 	{
 		printf("Error al obtener el paquete: Paquete nulo.\n");
@@ -375,7 +379,8 @@ char * getDataMSG(BYTE *packet){
 
 	int packetType = getPacketType(packet);
 	if(packetType == 3) {
-		int dataLength = getDataLength(packet);
+	//int dataLength = getDataLength(packet);
+		//Ahora se pasa por parametro
 //		printf("Data length: %d\n", dataLength);
 
 		char * data = (char *) malloc((dataLength+1)* sizeof(char));
@@ -513,7 +518,7 @@ void printMSG(BYTE *packet){
 			for(i=0; i<dataLength; i++)
 				printf(" %d ", packet[4+i]);
 			printf("|\n");
-			char * msg = getDataMSG(packet);
+			char * msg = getDataMSG(packet, PACKETSIZE);
 			printf("Packet number: %d\n", packetN);
 			printf("Data length: %d\n", dataLength);
 			printf("Package data: %s\n\n", msg);
