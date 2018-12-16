@@ -534,7 +534,8 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   int i, packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
 
-  int enviado = 0;
+  int reenviar = 0;
+  int retries = 0;
 
   int datosAEnviar = PACKETSIZE;
 
@@ -590,38 +591,39 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   }
 
   while(fin!=2){
-    packetNumber++;
+    if(reenviar == 0){
+      packetNumber++;
 
-    if(packetNumber<=numPaquetes){
-      fread(datosFichero, PACKETSIZE,1,fichero);
-      packet = DATAPacket(packetNumber,datosFichero);
-    }
-    else {
-      fin=1;
-      if(restoPaquete!=0){
-        fread(ultimosDatosFichero, restoPaquete,1,fichero);
-        datosAEnviar = restoPaquete;
+      if(packetNumber<=numPaquetes){
+        fread(datosFichero, PACKETSIZE,1,fichero);
+        packet = DATAPacket(packetNumber,datosFichero);
       }
-      else{
-        ultimosDatosFichero[0]=0;
-        datosAEnviar = 1;
+      else {
+        fin=1;
+        if(restoPaquete!=0){
+          fread(ultimosDatosFichero, restoPaquete,1,fichero);
+          datosAEnviar = restoPaquete;
+        }
+        else{
+          ultimosDatosFichero[0]=0;
+          datosAEnviar = 1;
+        }
+        packet = DATAPacket(packetNumber,ultimosDatosFichero);
       }
-      packet = DATAPacket(packetNumber,ultimosDatosFichero);
+
+      if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
     }
-
-    if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
-//    printMSG(packet);
-
-//    for(int i; i<PACKETSIZE; i++)
-//      printf("%d octal: %o decimal: %d char: %c \n",i, packet[i], packet[i], packet[i]);
-
+    if(reenviar == 1){
+      reenviar = 0;
+      if(VERBOSE) printf("Reenviando paquete %d...\n", packetNumber);
+    }
+    
     if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
 		if(tipo==TCP)	send (s, packet, 4+datosAEnviar,0);
 
-    if(tipo==UDP)	alarm(TIMEOUT*3);
+    if(tipo==UDP)	alarm(TIMEOUT*2);
     if(tipo==UDP)	cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
     if(tipo==TCP)	cc = recv (s, asentimiento, 4,0);
-    printf("len: %d\n", cc);
     if(cc == -1){
 			if(tipo==UDP){
    	  	if (errno == EINTR) {
@@ -630,7 +632,14 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   				 * not already exceeded the retry limit.
   				 */
         	if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
-        	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
+          if(retries<5){
+            reenviar = 1;
+            retries++;
+            if(VERBOSE) printf("Intento n %d.\n", retries);
+            continue;
+          }
+        	else
+        	 sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
       	}
       	else {
         	if(VERBOSE) printf("Error al recibir un mensaje\n");
@@ -646,7 +655,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
       free(ultimosDatosFichero);
       return;
     }
-   if(tipo==UDP) alarm(0);
+    if(tipo==UDP) alarm(0);
 
     //Para comprobar el timeout
     //if(packetNumber == 5){ return;}
@@ -700,6 +709,8 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
 {
   int packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
+  int retries = 0;
+  int reenviar = 0;
 
   char * packet;
   char parteFichero[PACKETSIZE+4];
@@ -731,9 +742,14 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
 	if(tipo==TCP)	send (s, packet, 4,0);
 
   while(fin!=2){
-    packetNumber++;
+    if(reenviar == 0){
+      packetNumber++;
+    }
+    if(reenviar == 1){
+      reenviar = 0;
+    }
 
-  //  alarm(TIMEOUT);
+    if(tipo==UDP)	alarm(TIMEOUT);
     if(tipo==UDP)	cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 		if(tipo==TCP)	cc = recv (s, parteFichero, PACKETSIZE+4,0);
     if(cc == -1){
@@ -744,7 +760,15 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
   				 * not already exceeded the retry limit.
   				 */
         	if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
-        	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
+          if(retries<5){
+            sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen); //reenviamos el ultimo ack
+            reenviar = 1;
+            retries++;
+            if(VERBOSE) printf("Intento n %d.\n", retries);
+            continue;
+          }
+        	else
+        	 sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
       	}
       	else {
         	if(VERBOSE) printf("Error al recibir un mensaje\n");
@@ -758,7 +782,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
       fclose(fichero);
       return;
     }
-    //alarm(0);
+    alarm(0);
 
     //Para comprobar el timeout
     //if(packetNumber==5) { sleep(7); return;}

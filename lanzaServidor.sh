@@ -1,6 +1,8 @@
 #!/bin/bash
 pkill servidor
+
 ./servidor
+
 ./cliente localhost tcp e fichero1.txt &
 ./cliente localhost tcp l fichero2.txt &
 ./cliente localhost tcp e fichero3.txt &

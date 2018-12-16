@@ -1,18 +1,18 @@
-Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35268 date: Sun Dec 16 20:52:00 2018
-Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35270 date: Sun Dec 16 20:52:00 2018
-Recibiendo fichero3.txt de 127.0.0.1
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35464 date: Sun Dec 16 21:12:15 2018
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35466 date: Sun Dec 16 21:12:15 2018
 Recibiendo fichero1.txt de 127.0.0.1
-Completada recepcion de fichero1.txt desde 127.0.0.1
-Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 55747 date: Sun Dec 16 20:52:00 2018
-Recibiendo fichero4.txt de 127.0.0.1
-Completada recepcion de fichero4.txt desde 127.0.0.1
-Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 60465 date: Sun Dec 16 20:52:00 2018
-Enviando fichero5.txt a 127.0.0.1
-Completado envio  de fichero5.txt desde 127.0.0.1
-Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35272 date: Sun Dec 16 20:52:00 2018
 Enviando fichero2.txt a 127.0.0.1
-Completado envio  de fichero2.txt desde 127.0.0.1
-Completada recepcion de fichero3.txt desde 127.0.0.1
-Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 41350 date: Sun Dec 16 20:52:00 2018
+Completada recepcion de fichero1.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 52267 date: Sun Dec 16 21:12:15 2018
 Recibiendo fichero6.txt de 127.0.0.1
 Completada recepcion de fichero6.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 58522 date: Sun Dec 16 21:12:15 2018
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 55259 date: Sun Dec 16 21:12:15 2018
+Recibiendo fichero4.txt de 127.0.0.1
+Enviando fichero5.txt a 127.0.0.1
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35468 date: Sun Dec 16 21:12:15 2018
+Recibiendo fichero3.txt de 127.0.0.1
+Completado envio  de fichero5.txt desde 127.0.0.1
+Completada recepcion de fichero4.txt desde 127.0.0.1
+Completado envio  de fichero2.txt desde 127.0.0.1
+Completada recepcion de fichero3.txt desde 127.0.0.1

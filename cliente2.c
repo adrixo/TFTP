@@ -249,59 +249,7 @@ char *argv[];
     if(argv[3][0] == 'e'){
       clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in, UDP);
     }
-/*
-  	while (n_retry > 0) {
-      /*if (sendto (s, msg, BUFFERSIZE, 0, (struct sockaddr *)&servaddr_in,
-  				sizeof(struct sockaddr_in)) == -1) {
-    		perror(argv[0]);
-    		fprintf(stderr, "%s: unable to send request\n", argv[0]);
-    		exit(1);
-    	}
-  		/* Set up a timeout so I don't hang in case the packet
-  		 * gets lost.  After all, UDP does not guarantee
-  		 * delivery.
-  		 */
-  	  /*alarm(TIMEOUT);
-  		/* Wait for the reply to come in. */
-      /*if (recvfrom (s, msg, BUFFERSIZE, 0,
-  				(struct sockaddr *)&servaddr_in, &addrlen) == -1) {
-    		if (errno == EINTR) {
-    				/* Alarm went off and aborted the receive.
-    				 * Need to retry the request if we have
-    				 * not already exceeded the retry limit.
-    				 */
-    /*      printf("attempt %d (retries %d).\n", n_retry, RETRIES);
-    	 		n_retry--;
-        }
-        else  {
-  				printf("Unable to get response from %s\n", argv[1]);
-  				exit(1);
-        }
-      }
-      else {
-        alarm(0);
-        /* Print out response. */
-        // si no hay error:
-/*
-        if(argv[3][0] == 'l'){
-          printf("Enviando %s...\n", argv[4]);
-          clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in);
-        }
-        if(argv[3][0] == 'r'){
-          printf("Recibiendo %s...\n", argv[4]);
-          //clientUDPRecibeFichero
-        }
-        if(getPacketType(msg)==5)
-          printMSG(msg);
 
-        break;
-      }
-    }
-
-    if (n_retry == 0) {
-      printf("Unable to get response from");
-      printf(" %s after %d attempts.\n", argv[1], RETRIES);
-    }*/
   }
 
   else if (tcp){
@@ -311,66 +259,7 @@ char *argv[];
     if(argv[3][0] == 'e'){
       clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in, TCP);
     }
-	/*
-  	for (i=1; i<=5; i++) {
-  		*buf = i;
-  		if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) {
-  			fprintf(stderr, "%s: Connection aborted on error ",	argv[0]);
-  			fprintf(stderr, "on send number %d\n", i);
-  			exit(1);
-  		}
-  	}*/
-
-  		/* Now, shutdown the connection for further sends.
-  		 * This will cause the server to receive an end-of-file
-  		 * condition after it has received all the requests that
-  		 * have just been sent, indicating that we will not be
-  		 * sending any further requests.
-  		 */
-  /*	if (shutdown(s, 1) == -1) {
-  		perror(argv[0]);
-  		fprintf(stderr, "%s: unable to shutdown socket\n", argv[0]);
-  		exit(1);
-  	} */
-
-  		/* Now, start receiving all of the replys from the server.
-  		 * This loop will terminate when the recv returns zero,
-  		 * which is an end-of-file condition.  This will happen
-  		 * after the server has sent all of its replies, and closed
-  		 * its end of the connection.
-  		 */
-  /*	while (i = recv(s, buf, TAM_BUFFER, 0)) {
-  		if (i == -1) {
-        perror(argv[0]);
-  			fprintf(stderr, "%s: error reading result\n", argv[0]);
-  			exit(1);
-  		} */
-  			/* The reason this while loop exists is that there
-  			 * is a remote possibility of the above recv returning
-  			 * less than TAM_BUFFER bytes.  This is because a recv returns
-  			 * as soon as there is some data, and will not wait for
-  			 * all of the requested data to arrive.  Since TAM_BUFFER bytes
-  			 * is relatively small compared to the allowed TCP
-  			 * packet sizes, a partial receive is unlikely.  If
-  			 * this example had used 2048 bytes requests instead,
-  			 * a partial receive would be far more likely.
-  			 * This loop will keep receiving until all TAM_BUFFER bytes
-  			 * have been received, thus guaranteeing that the
-  			 * next recv at the top of the loop will start at
-  			 * the begining of the next reply.
-  			 */
-  	/*	while (i < TAM_BUFFER) {
-  			j = recv(s, &buf[i], TAM_BUFFER-i, 0);
-  			if (j == -1) {
-          perror(argv[0]);
-  			  fprintf(stderr, "%s: error reading result\n", argv[0]);
-  			  exit(1);
-        }
-  			i += j;
-  		} */
-  			/* Print out message indicating the identity of this reply. */
-  		//printf("Received result number %d\n", *buf);
-  	}
+  }
 
       /* Print message indicating completion of task. */
   	time(&timevar);
@@ -533,7 +422,6 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   				 */
       	  if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
           if(retries<5){
-            if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
             reenviar = 1;
             retries++;
             if(VERBOSE) printf("Intento n %d.\n", retries);
@@ -668,7 +556,6 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       return;
     }
     if(tipo==UDP)	alarm(0);
-    printf("clie len: %d\n", cc);
 
     if(getPacketType(parteFichero)==5){
       printErrorMsg(parteFichero);
