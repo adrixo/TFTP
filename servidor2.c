@@ -340,6 +340,8 @@ char *argv[];
             		exit(1);
               }
               serverUDP (newSocket, buffer, clientaddr_in);
+
+              close(newSocket);
       				exit(0);
 
       			default:
@@ -427,12 +429,14 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
   while (len = recv(s, buf, BUFFERSIZE, 0)) {
     if (len == -1) errout(hostname); /* error from recv */
 	if(getPacketType(buf)==1){
+    addToLog("Iniciando peticion escritura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "TCP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buf);
     if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buf), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
     serverRecibeFichero(s,getFilename(buf), clientaddr_in, TCP);
   }
   if(getPacketType(buf)==2){
+    addToLog("Iniciando peticion lectura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "TCP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buf);
     if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buf), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
@@ -484,22 +488,33 @@ void errout(char *hostname)
 // Venimos de la llamada: serverUDP (s_UDP, buffer, clientaddr_in);
 void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 {
-  printf("Starting serverUDP on socket: %d \n", s);
-  //https://stackoverflow.com/questions/24182950/how-to-get-hostname-from-ip-linux
-  addToLog("Inicia peticion: ", buffer, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
+  if(VERBOSE) printf("Starting serverUDP on socket: %d \n", s);
 
-  int nc;
+  int nc, status;
 	int addrlen;
   char *nombreFichero;
+
+  char hostname[MAXHOST];
+
   addrlen = sizeof(struct sockaddr_in);
 
+  status = getnameinfo((struct sockaddr *)&clientaddr_in,sizeof(clientaddr_in),
+                           hostname,MAXHOST,NULL,0,0);
+  if(status){
+    if (inet_ntop(AF_INET, &(clientaddr_in.sin_addr), hostname, MAXHOST) == NULL)
+      perror(" inet_ntop \n");
+  }
+
   if(getPacketType(buffer)==1){
+    inet_ntop(AF_INET, &(clientaddr_in.sin_addr), hostname, MAXHOST);
+    addToLog("Iniciando peticion escritura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
     serverRecibeFichero(s,getFilename(buffer), clientaddr_in, UDP);
   }
   if(getPacketType(buffer)==2){
+    addToLog("Iniciando peticion lectura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
@@ -526,7 +541,6 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   char * datosFichero;
   char * ultimosDatosFichero;
   char * packet;
-  char * packetRetry;
 
   char asentimiento[4];
 

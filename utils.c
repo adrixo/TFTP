@@ -12,7 +12,7 @@ void addToLog(char * stringDescriptivo, char * hostname, char * ip, char * proto
 
 	fd = fopen("log.txt", "a");
 	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
-	fprintf(fd, "%s >> Hostname: %s ip: %s protocol: %s Port: %d date: %s",stringDescriptivo, hostname, ip, protocol, port, (char *)ctime(&timevar));
+	fprintf(fd, "%s Hostname: %s ip: %s Protocol: %s Puerto cliente: %d date: %s",stringDescriptivo, hostname, ip, protocol, port, (char *)ctime(&timevar));
 
 	fclose(fd);
 }
