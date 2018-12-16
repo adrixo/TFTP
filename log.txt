@@ -16,3 +16,171 @@ Completado envio  de fichero5.txt desde 127.0.0.1
 Completada recepcion de fichero4.txt desde 127.0.0.1
 Completado envio  de fichero2.txt desde 127.0.0.1
 Completada recepcion de fichero3.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35612 date: Sun Dec 16 21:14:12 2018
+Recibiendo fichero1.txt de 127.0.0.1
+Envío de fichero1.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 33270 date: Sun Dec 16 21:14:12 2018
+Recibiendo fichero6.txt de 127.0.0.1
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35616 date: Sun Dec 16 21:14:12 2018
+Recibiendo fichero3.txt de 127.0.0.1
+Envío de fichero6.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Envío de fichero3.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 48323 date: Sun Dec 16 21:14:12 2018
+Recibiendo fichero4.txt de 127.0.0.1
+Envío de fichero4.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35630 date: Sun Dec 16 21:14:40 2018
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35628 date: Sun Dec 16 21:14:40 2018
+--Recibiendo fichero1.txt de 127.0.0.1
+--Envío de fichero1.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 41987 date: Sun Dec 16 21:14:40 2018
+--Recibiendo fichero6.txt de 127.0.0.1
+--Envío de fichero6.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 55337 date: Sun Dec 16 21:14:40 2018
+--Recibiendo fichero4.txt de 127.0.0.1
+--Envío de fichero4.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+--Recibiendo fichero3.txt de 127.0.0.1
+--Envío de fichero3.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35850 date: Sun Dec 16 21:45:48 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:45:48 2018
+: Completada recepcion de fichero2.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35880 date: Sun Dec 16 21:47:57 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:47:57 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35882 date: Sun Dec 16 21:47:59 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:47:59 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35884 date: Sun Dec 16 21:48:00 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:48:00 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35886 date: Sun Dec 16 21:48:02 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:48:02 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35888 date: Sun Dec 16 21:48:03 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:48:03 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35896 date: Sun Dec 16 21:49:19 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:49:19 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 35898 date: Sun Dec 16 21:49:28 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:49:28 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 39445 date: Sun Dec 16 21:49:32 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:49:32 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 57303 date: Sun Dec 16 21:49:36 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:49:36 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 38780 date: Sun Dec 16 21:56:52 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:56:52 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 50599 date: Sun Dec 16 21:57:25 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:57:25 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 35564 date: Sun Dec 16 21:57:27 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 21:57:27 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 41313 date: Sun Dec 16 22:01:21 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 22:01:21 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 56008 date: Sun Dec 16 22:06:10 2018
+--Enviando fichero2.txt a 127.0.0.1
+--Sun Dec 16 22:06:10 2018
+:Completado envio  de fichero2.txt desde 127.0.0.1
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 33126 date: Sun Dec 16 22:12:43 2018
+--Enviando fichero2.txt a 127.0.0.1
+--Sun Dec 16 22:12:43 2018
+:Completado envio  de fichero2.txt desde 127.0.0.1
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 33194 date: Sun Dec 16 22:15:06 2018
+--Enviando fichero2.txt a 127.0.0.1
+--Sun Dec 16 22:15:06 2018
+:Completado envio  de fichero2.txt desde 127.0.0.1
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 36624 date: Sun Dec 16 22:15:21 2018
+--Enviando fichero2.txt a 127.0.0.1
+--Sun Dec 16 22:15:21 2018
+:Completado envio  de fichero2.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 51141 date: Sun Dec 16 22:15:29 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 22:15:29 2018
+: Completada recepcion de fichero2.txt desde 127.0.0.1
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 55946 date: Sun Dec 16 22:17:38 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+--Sun Dec 16 22:17:38 2018
+: Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 36184 date: Sun Dec 16 22:20:24 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:20:24 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 39772 date: Sun Dec 16 22:20:53 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:20:53 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 59882 date: Sun Dec 16 22:21:04 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:21:04 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 47363 date: Sun Dec 16 22:21:11 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Completada recepcion de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:21:11 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 54787 date: Sun Dec 16 22:22:42 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:22:42 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 46508 date: Sun Dec 16 22:22:51 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:22:51 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 35330 date: Sun Dec 16 22:23:45 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:23:45 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 52912 date: Sun Dec 16 22:23:48 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:23:48 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 50604 date: Sun Dec 16 22:23:57 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Completada recepcion de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:23:57 2018
+
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 50733 date: Sun Dec 16 22:24:15 2018
+--Enviando fichero2.txt a 127.0.0.1
+Completado envio  de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:24:15 2018
+
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: UDP Puerto cliente: 44528 date: Sun Dec 16 22:25:10 2018
+--Enviando fichero2.txt a 127.0.0.1
+Completado envio  de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:25:10 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 42730 date: Sun Dec 16 22:25:20 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:25:20 2018
+
+Iniciando peticion escritura->  Hostname: 127.0.0.1 ip: 127.0.0.1 Protocol: UDP Puerto cliente: 44767 date: Sun Dec 16 22:26:27 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Completada recepcion de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:26:27 2018
+
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 36218 date: Sun Dec 16 22:26:46 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Completada recepcion de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:26:46 2018
+
+Iniciando peticion escritura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 36220 date: Sun Dec 16 22:26:55 2018
+--Recibiendo fichero2.txt de 127.0.0.1
+Envío de fichero2.txt desde 127.0.0.1 fallido debido a: El fichero ya existe a las Sun Dec 16 22:26:55 2018
+
+Iniciando peticion lectura->  Hostname: compi.reddecasa ip: 127.0.0.1 Protocol: TCP Puerto cliente: 36228 date: Sun Dec 16 22:27:13 2018
+--Enviando fichero2.txt a 127.0.0.1
+Completado envio  de fichero2.txt desde 127.0.0.1 a las Sun Dec 16 22:27:13 2018
+

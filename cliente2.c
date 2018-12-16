@@ -47,7 +47,7 @@ extern int errno;
 #include "utils.c"
 
 
-void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in, int tipo);
+void clienteEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in, int tipo);
 void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in, int tipo);
 
 /*
@@ -118,12 +118,10 @@ char *argv[];
     }
 
   if(!strcmp(argv[2], "tcp")){
-    printf("tcp!!\n");
     tcp = 1;
   }
 
   if(!strcmp(argv[2], "udp")){
-    printf("udp!!\n");
     udp = 1;
   }
 
@@ -247,7 +245,7 @@ char *argv[];
       clientUDPRecibeFichero(s, argv[4], "octec", servaddr_in, UDP);
     }
     if(argv[3][0] == 'e'){
-      clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in, UDP);
+      clienteEnviaFichero(s, argv[4], "octec", servaddr_in, UDP);
     }
 
   }
@@ -257,7 +255,7 @@ char *argv[];
       clientUDPRecibeFichero(s, argv[4], "octec", servaddr_in, TCP);
     }
     if(argv[3][0] == 'e'){
-      clientUDPEnviaFichero(s, argv[4], "octec", servaddr_in, TCP);
+      clienteEnviaFichero(s, argv[4], "octec", servaddr_in, TCP);
     }
   }
 
@@ -268,7 +266,7 @@ char *argv[];
 }
 
 
-void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in, int tipo)
+void clienteEnviaFichero(int s, char * Nombrefichero, char * mode, struct sockaddr_in clientaddr_in, int tipo)
 {
   int i,packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
@@ -287,16 +285,29 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 
   FILE * fichero;
 
+//obtenemos el numero de puerto, en un archivo con ese nombre meteremos el progreso de ejecución del programa
+  struct sockaddr_in myaddr;
+  int len;
+  len = sizeof(len);
+  if (getsockname(s, (struct sockaddr *)&myaddr, &len) == -1)
+      perror("getsockname");
+  /*else
+      printf("port number %d\n", ntohs(myaddr.sin_port));*/
+  int portNumber = ntohs(myaddr.sin_port);
+
   addrlen = sizeof(struct sockaddr_in);
   char rutaFichero[25] = "ficherosTFTPcliente/";
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Enviando fichero %s...\n", Nombrefichero);
+  addClientFileTransferInfo(0, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", 0);
+
   fichero = fopen(rutaFichero,"rb");
   if(fichero==NULL){
     if(VERBOSE)  printf("No se ha encontrado el fichero %s\n", Nombrefichero);
     if(tipo==UDP) sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
 		if(tipo==TCP) sendErrorMSG_TCP(s, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "No se ha encontrado el fichero", 0);
     return;
   }
 
@@ -316,6 +327,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
          */
     	  if(VERBOSE) printf("Timeout vencido: No se recibio ACK para empezar a enviar fichero.\n");
     	  sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
+        addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Timeout: No se recibio ACK", 0);
     	}
     	else {
     	  if(VERBOSE) printf("Error al recibir un mensaje\n");
@@ -323,6 +335,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
     	}
 		}
 		if(tipo==TCP)	sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Error al recibir un mensaje", 0);
     fclose (fichero);
     return;
   }
@@ -344,6 +357,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
     if(VERBOSE) printf("Se esperaba ack\n");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
 		if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba ack");
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Se esperaba ack", 0);
     fclose(fichero);
     return;
   }
@@ -352,7 +366,8 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   if(getPacketNumber(asentimiento)!=packetNumber){
     if(VERBOSE) printf("Numero asentimiento incorrecto");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
-		if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba ack");
+		if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto", 0);
     fclose(fichero);
     return;
   }
@@ -374,6 +389,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
     if(VERBOSE) printf("Error al hacer el calloc.\n");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
 		if(tipo==TCP)	sendErrorMSG_TCP(s, NODEFINIDO, "Error al hacer el calloc");
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Error al hacer el calloc", 0);
     fclose (fichero);
     return;
   }
@@ -407,6 +423,8 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
       if(VERBOSE) printf("Reenviando paquete %d...\n", packetNumber);
     }
 
+    addClientFileTransferInfo(2, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", packetNumber);
+
     if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
 		if(tipo==TCP)	send (s, packet, 4+datosAEnviar,0);
 
@@ -421,6 +439,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   				 * not already exceeded the retry limit.
   				 */
       	  if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
+          addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Timeout vencido: No se recibio ACK", 0);
           if(retries<5){
             reenviar = 1;
             retries++;
@@ -436,6 +455,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
      	 }
 			}
 			if(tipo==TCP) sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Error al recibir un mensaje", 0);
 
       fclose (fichero);
       free(datosFichero);
@@ -454,6 +474,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
       if(VERBOSE) printf("Se esperaba ack\n");
       if(tipo==UDP) sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
 			if(tipo==TCP) sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba ack");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Se esperaba ack", 0);
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
@@ -465,6 +486,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
       if(VERBOSE) printf("Numero asentimiento incorrecto\n");
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
 			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto", 0);
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
@@ -476,6 +498,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   }
 
   if(VERBOSE) printf("Envio concluido\n");
+  addClientFileTransferInfo(4, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", 0);
 
   fclose (fichero);
   free(datosFichero);
@@ -500,13 +523,26 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
   int addrlen;
   addrlen = sizeof(struct sockaddr_in);
 
+  //obtenemos el numero de puerto, en un archivo con ese nombre meteremos el progreso de ejecución del programa
+  struct sockaddr_in myaddr;
+  int len;
+  len = sizeof(len);
+  if (getsockname(s, (struct sockaddr *)&myaddr, &len) == -1)
+      perror("getsockname");
+  /*else
+      printf("port number %d\n", ntohs(myaddr.sin_port));*/
+  int portNumber = ntohs(myaddr.sin_port);
+
   char rutaFichero[25] = "ficherosTFTPcliente/";
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Recibiendo fichero %s...\n", Nombrefichero);
+  addClientFileTransferInfo(0, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", 0);
+
     fichero = fopen(rutaFichero,"rb");
   if(fichero!=NULL){
     if(VERBOSE)  printf("El fichero %s ya existe\n", Nombrefichero);
+    addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "El fichero ya existe", 0);
     fclose(fichero);
     return;
   }
@@ -536,6 +572,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
   				 * not already exceeded the retry limit.
   				 */
         	if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
+          addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Timeout vencido: No se recibio paquete", 0);
           if(retries<5){
             sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen); //reenviamos el ultimo ack
             reenviar = 1;
@@ -545,6 +582,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
           }
         	else
             sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeouts vencidos: No se recibio paquete\n");
+            addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Timeouts vencidos: No se recibio paquete", 0);
       	}
       	else {
         	if(VERBOSE) printf("Error al recibir un mensaje\n");
@@ -552,6 +590,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       	}
 			}
 			if(tipo==TCP)	sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Error al recibir un mensaje", 0);
       fclose (fichero);
       return;
     }
@@ -571,6 +610,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
 			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba paquete");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Se esperaba paquete", 0);
       fclose(fichero);
       return;
     }
@@ -579,11 +619,14 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
 			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addClientFileTransferInfo(5, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto", 0);
       fclose(fichero);
       return;
     }
 
     fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1,fichero);
+
+    addClientFileTransferInfo(1, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", packetNumber);
     packet = ACK(packetNumber);
     if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 		if(tipo==TCP)	send (s, packet, 4,0);
@@ -591,6 +634,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
     fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");
+  addClientFileTransferInfo(4, portNumber, Nombrefichero, inet_ntoa(clientaddr_in.sin_addr), "nada", 0);
   fclose(fichero);
 
   return;

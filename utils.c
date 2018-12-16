@@ -26,8 +26,8 @@ void addFileTransferInfoToLog(int type, char * fileName, char * ip)
 	fd = fopen("log.txt", "a");
 	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
 
-	if(type==1) fprintf(fd, "   Recibiendo %s de %s\n", fileName, ip );
-	if(type==2) fprintf(fd, "   Enviando %s a %s\n", fileName, ip );
+	if(type==1) fprintf(fd, "--Recibiendo %s de %s\n", fileName, ip );
+	if(type==2) fprintf(fd, "--Enviando %s a %s\n", fileName, ip );
 
 	fclose(fd);
 }
@@ -41,12 +41,36 @@ void addEndFileTransferInfoToLog(int type, char * fileName, char * ip, char * er
 	fd = fopen("log.txt", "a");
 	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
 
-	if(type==1) fprintf(fd, "   Completada recepcion de %s desde %s\n", fileName, ip );
-	if(type==2) fprintf(fd, "   Completado envio  de %s desde %s\n", fileName, ip );
-	if(type==5) fprintf(fd, "   Envío de %s desde %s fallido debido a: %s\n", fileName, ip, errmsg );
+	if(type==1) fprintf(fd, "Completada recepcion de %s desde %s a las %s\n", fileName, ip, (char *)ctime(&timevar) );
+	if(type==2) fprintf(fd, "Completado envio  de %s desde %s a las %s\n", fileName, ip, (char *)ctime(&timevar) );
+	if(type==5) fprintf(fd, "Envío de %s desde %s fallido debido a: %s a las %s\n", fileName, ip, errmsg, (char *)ctime(&timevar) );
 
 	fclose(fd);
 }
+
+void addClientFileTransferInfo(int type, int port, char * fileName, char * ip, char * errmsg, int paquete)
+{
+	FILE *fd;
+	long timevar;
+	time (&timevar);
+	char filename[15];
+
+	sprintf(filename, "%d", port);
+  strcat(filename,".txt");
+
+	fd = fopen(filename, "a");
+	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
+
+	if(type==0) fprintf(fd, "Inicio de transmision de %s desde %s a las %s\n",fileName, ip,(char *)ctime(&timevar));
+	if(type==1) fprintf(fd, "--Recepcion del paquete %d desde %s\n", paquete, ip );
+	if(type==2) fprintf(fd, "--Envio del paquete %d desde %s\n", paquete, ip );
+	if(type==3) fprintf(fd, "--Completada recepcion de %s desde %s\n", fileName, ip );
+	if(type==4) fprintf(fd, "Completada transmisión de %s desde %s a las %s\n",fileName, ip ,(char *)ctime(&timevar));
+	if(type==5) fprintf(fd, "Envio de %s desde %s fallido debido a: %s a las %s\n", fileName, ip, errmsg, (char *)ctime(&timevar));
+
+	fclose(fd);
+}
+
 
 //Ejemplo: sendErrorMSG(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha podido encontrar");
 void sendErrorMSG_UDP(int s, struct sockaddr_in clientaddr_in, int codigoError, char * errMsg){
