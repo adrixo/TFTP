@@ -303,6 +303,14 @@ char *argv[];
 
   else if (tcp){
 
+    BYTE * packetesi = WRQ("hola.txt", "octet");
+    if (send(s, packetesi, 2+strlen("hola.txt")+1+strlen("octet")+1, 0) != TAM_BUFFER) {
+      fprintf(stderr, "%s: Connection aborted on error ",	argv[0]);
+      fprintf(stderr, "on send number %d\n", i);
+      exit(1);
+    }
+    /*
+
   	for (i=1; i<=5; i++) {
   		*buf = i;
   		if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) {
@@ -311,7 +319,7 @@ char *argv[];
   			exit(1);
   		}
   	}
-
+    */
   		/* Now, shutdown the connection for further sends.
   		 * This will cause the server to receive an end-of-file
   		 * condition after it has received all the requests that
@@ -375,6 +383,8 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   int i,packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
 
+  int datosAEnviar = PACKETSIZE;
+
   char * datosFichero;
   char * ultimosDatosFichero;
   char * packet;
@@ -392,7 +402,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Enviando fichero %s...\n", Nombrefichero);
-  fichero = fopen(rutaFichero,"r");
+  fichero = fopen(rutaFichero,"rb");
   if(fichero==NULL){
     if(VERBOSE)  printf("No se ha encontrado el fichero %s\n", Nombrefichero);
     //sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
@@ -451,11 +461,11 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 
   fseek(fichero, 0L, SEEK_END );
   tamanno=ftell(fichero);
-  numPaquetes=tamanno/512;
-  restoPaquete=tamanno%512;
+  numPaquetes=tamanno/PACKETSIZE;
+  restoPaquete=tamanno%PACKETSIZE;
 
   rewind(fichero);
-  datosFichero = calloc(512,sizeof(char));
+  datosFichero = calloc(PACKETSIZE,sizeof(char));
   if(restoPaquete!=0)
     ultimosDatosFichero = calloc(restoPaquete,sizeof(char));
   else
@@ -471,20 +481,26 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   while(fin!=2){
     packetNumber++;
   	if(packetNumber<=numPaquetes){
-      fread(datosFichero, 512,1,fichero);
+      fread(datosFichero, PACKETSIZE,1,fichero);
       packet = DATAPacket(packetNumber,datosFichero);
     }
 
     else{
       fin=1;
-      if(restoPaquete!=0)
+      if(restoPaquete!=0){
         fread(ultimosDatosFichero, restoPaquete,1,fichero);
-      else ultimosDatosFichero[0]=0;
-        packet = DATAPacket(packetNumber,ultimosDatosFichero);
+        datosAEnviar = restoPaquete;
+      }
+      else {
+        ultimosDatosFichero[0]=0;
+        datosAEnviar = 1;
+      }
+      packet = DATAPacket(packetNumber,ultimosDatosFichero);
     }
 
     if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
-    sendto (s, packet, 2+2+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
+    printf("Enviando %dd\n", datosAEnviar);
+    sendto (s, packet, 2+2+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
     alarm(TIMEOUT);
 		cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
@@ -628,7 +644,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
     packet = ACK(packetNumber);
     sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
-    if(cc-4<512)
+    if(cc-4<PACKETSIZE)
     fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");

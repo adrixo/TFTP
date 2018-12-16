@@ -26,6 +26,8 @@
 #define BUFFERSIZE	1024	/* maximum size of packets to be received */
 #define TAM_BUFFER 10
 #define MAXHOST 128
+#define TCP	1
+#define UDP	2
 
 extern int errno;
 
@@ -34,7 +36,7 @@ extern int errno;
 
 
 void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
-void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
+void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int protocolo);
 
 /*
  *			M A I N
@@ -342,8 +344,14 @@ char *argv[];
  */
 void serverTCP(int s, struct sockaddr_in clientaddr_in)
 {
+
+    int nc;
+  	int addrlen;
+    char *nombreFichero;
+    addrlen = sizeof(struct sockaddr_in);
+
   int reqcnt = 0;		/* keeps count of number of requests */
-  char buf[TAM_BUFFER];		/* This example uses TAM_BUFFER byte messages. */
+  char buffer[BUFFERSIZE];		/* This example uses TAM_BUFFER byte messages. */
   char hostname[MAXHOST];		/* remote host's name string */
 
   int len, len1, status;
@@ -402,7 +410,7 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	 * how the server will know that no more requests will
 	 * follow, and the loop will be exited.
 	 */
-  while (len = recv(s, buf, TAM_BUFFER, 0)) {
+  while (len = recv(s, buffer, BUFFERSIZE, 0)) {
     if (len == -1) errout(hostname); /* error from recv */
 	  /* The reason this while loop exists is that there
 		 * is a remote possibility of the above recv returning
@@ -418,8 +426,8 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 		 * next recv at the top of the loop will start at
 		 * the begining of the next request.
 		 */
-    while (len < TAM_BUFFER) {
-      len1 = recv(s, &buf[len], TAM_BUFFER-len, 0);
+    while (len < BUFFERSIZE) {
+      len1 = recv(s, &buffer[len], BUFFERSIZE-len, 0);
       if (len1 == -1) errout(hostname);
       len += len1;
     }
@@ -430,7 +438,22 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
   		 */
     sleep(1);
   	/* Send a response back to the client. */
-    if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) errout(hostname);
+    //if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) errout(hostname);
+    if(getPacketType(buffer)==1){
+      nombreFichero = getFilename(buffer);
+      if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
+      addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+      serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in,1);
+    }
+    if(getPacketType(buffer)==2){
+      nombreFichero = getFilename(buffer);
+      if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
+      addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+      serverUDPEnviaFichero(s, getFilename(buffer), clientaddr_in);
+    }
+    if(getPacketType(buffer)==5){
+      printError(getErrorCode(buffer));
+    }
   }
 
 	/* The loop has terminated, because there are no
@@ -493,7 +516,7 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
     nombreFichero = getFilename(buffer);
     if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-    serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in);
+    serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in,2);
   }
   if(getPacketType(buffer)==2){
     nombreFichero = getFilename(buffer);
@@ -642,7 +665,7 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
       return;
     }
     if(fin==1)
-    fin=2;
+      fin=2;
   }
 
   if(VERBOSE) printf("Envio concluido\n");
@@ -656,7 +679,7 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 
 
 
-void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
+void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int protocolo)
 {
   int packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
@@ -673,7 +696,7 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE) printf("Recibiendo fichero %s...\n", Nombrefichero);
-  fichero = fopen(rutaFichero,"r");
+  fichero = fopen(rutaFichero,"rb");
   if(fichero!=NULL){
     if(VERBOSE) printf("Error: El fichero ya existe.\n");
     sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
@@ -681,17 +704,22 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
     return;
   }
 
-  fichero = fopen(rutaFichero,"w");
+  fichero = fopen(rutaFichero,"wb");
   packet = ACK(0);
 
   if(VERBOSE) printf("ACK 0\n");
   sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 
-  while(fin!=2 && repetitions <5){
+  while(fin!=2){
     packetNumber++;
 
     alarm(TIMEOUT);
-    cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(protocolo == 1) {
+      cc = recv(s, parteFichero, PACKETSIZE+4,0);
+      printf("cc%d \n",cc);
+      return;
+    }
+    if(protocolo == 2) cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
     if(cc == -1){
       if (errno == EINTR) {
   				/* Alarm went off and aborted the receive.

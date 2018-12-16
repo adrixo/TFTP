@@ -1,5 +1,5 @@
 kCC = gcc
-CFLAGS = 
+CFLAGS =
 #Solaris
 #LIBS = -lsocket -lnsl
 #Linux
@@ -12,6 +12,9 @@ all: ${PROGS}
 servidor: servidor.o
 	${CC} ${CFLAGS} -o $@ servidor.o ${LIBS}
 
+servidor2: servidor2.o
+	${CC} ${CFLAGS} -o $@ servidor2.o ${LIBS}
+
 servidorSimplificado: servidorSimplificado.o
 	${CC} ${CFLAGS} -o $@ servidorSimplificado.o ${LIBS}
 
@@ -23,6 +26,9 @@ clientudp: clientudp.o
 
 cliente: cliente.o
 	${CC} ${CFLAGS} -o $@ cliente.o ${LIBS}
+
+cliente2: cliente2.o
+	${CC} ${CFLAGS} -o $@ cliente2.o ${LIBS}
 
 clean:
 	rm *.o ${PROGS}
