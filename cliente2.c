@@ -107,7 +107,7 @@ char *argv[];
 
   if(argv[3][0] != 'l' )
     if(argv[3][0] != 'e'){
-		  fprintf(stderr, "Mode should be <l> or <r>\n");
+		  fprintf(stderr, "Mode should be <l> or <e>\n");
 		    exit(1);
 	  }
 
@@ -388,7 +388,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   char * ultimosDatosFichero;
   char * packet;
   char asentimiento[4];
-
+  int datosAEnviar = PACKETSIZE;
   int addrlen;
   int tamanno;
   int numPaquetes;
@@ -397,11 +397,11 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
   FILE * fichero;
 
   addrlen = sizeof(struct sockaddr_in);
-  char rutaFichero[25] = "ficherosTFTPcliente/";
+  char rutaFichero[25] = "ficherosTFTPclient/";
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Enviando fichero %s...\n", Nombrefichero);
-  fichero = fopen(rutaFichero,"r");
+  fichero = fopen(rutaFichero,"rb");
   if(fichero==NULL){
     if(VERBOSE)  printf("No se ha encontrado el fichero %s\n", Nombrefichero);
     if(tipo==UDP) sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
@@ -476,6 +476,7 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
     ultimosDatosFichero = calloc(restoPaquete,sizeof(char));
   else
     ultimosDatosFichero = calloc(1,sizeof(char));
+		
 
   if(datosFichero==NULL || ultimosDatosFichero==NULL){
     if(VERBOSE) printf("Error al hacer el calloc.\n");
@@ -494,15 +495,20 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
 
     else{
       fin=1;
-      if(restoPaquete!=0)
+      if(restoPaquete!=0){
         fread(ultimosDatosFichero, restoPaquete,1,fichero);
-      else ultimosDatosFichero[0]=0;
-        packet = DATAPacket(packetNumber,ultimosDatosFichero);
+				datosAEnviar = restoPaquete;
+			}
+      else{
+				ultimosDatosFichero[0]=0;
+				datosAEnviar = 1;
+			}
+      packet = DATAPacket(packetNumber,ultimosDatosFichero);
     }
 
     if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
-    if(tipo==UDP)	sendto (s, packet, 2+2+512,0, (struct sockaddr *)&clientaddr_in, addrlen);
-		if(tipo==TCP)	send (s, packet, 2+2+512,0);
+    if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
+		if(tipo==TCP)	send (s, packet, 4+datosAEnviar,0);
     //if(tipo==UDP)	alarm(TIMEOUT);
 		if(tipo==UDP)	cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
 		if(tipo==TCP)	cc = recv (s, asentimiento, 4,0);
@@ -520,9 +526,10 @@ void clientUDPEnviaFichero(int s, char * Nombrefichero, char * mode, struct sock
       	else {
       	  if(VERBOSE) printf("Error al recibir un mensaje\n");
       	  sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
-     	 }
-			if(tipo==TCP) sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+     	 }		
 			}
+			if(tipo==TCP) sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+
       fclose (fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
@@ -578,12 +585,12 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
   char * packet;
   char parteFichero[PACKETSIZE+4];
 
-  FILE * fichero;
+  FILE * fichero; 
 
   int addrlen;
   addrlen = sizeof(struct sockaddr_in);
 
-  char rutaFichero[25] = "ficherosTFTPcliente/";
+  char rutaFichero[25] = "ficherosTFTPclient/";
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE)  printf("Recibiendo fichero %s...\n", Nombrefichero);
@@ -655,7 +662,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
       return;
     }
 
-    fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero );
+    fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1,fichero);
     packet = ACK(packetNumber);
     if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 		if(tipo==TCP)	send (s, packet, 4,0);
@@ -663,7 +670,7 @@ void clientUDPRecibeFichero(int s, char * Nombrefichero, char * mode, struct soc
     fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");
-  fclose (fichero);
+  fclose(fichero);
 
   return;
 

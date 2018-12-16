@@ -661,7 +661,7 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
   strcat(rutaFichero,Nombrefichero);
 
   if(VERBOSE) printf("Recibiendo fichero %s...\n", Nombrefichero);
-  fichero = fopen(rutaFichero,"r");
+  fichero = fopen(rutaFichero,"rb");
   if(fichero!=NULL){
     if(VERBOSE) printf("Error: El fichero ya existe.\n");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
@@ -670,13 +670,13 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
     return;
   }
 
-  fichero = fopen(rutaFichero,"w");
+  fichero = fopen(rutaFichero,"wb");
   packet = ACK(0);
 
   if(VERBOSE) printf("ACK 0\n");
   if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 	if(tipo==TCP)	send (s, packet, 4,0);	
-  //while(fin!=2 && repetitions <5){
+  while(fin!=2){
     packetNumber++;
 
   //  alarm(TIMEOUT);
@@ -733,13 +733,14 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
       return;
     }
 
-    //fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero);
+    fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero);
     packet = ACK(packetNumber);
     if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+		if(tipo==TCP)	send (s, packet, 4,0);
 
     if(cc-4<PACKETSIZE)
       fin=2;
-  //}
+  }
   if(VERBOSE) printf("Fichero recibido.\n");
   fclose (fichero);
   return;
