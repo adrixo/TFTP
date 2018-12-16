@@ -32,6 +32,22 @@ void addFileTransferInfoToLog(int type, char * fileName, char * ip)
 	fclose(fd);
 }
 
+void addEndFileTransferInfoToLog(int type, char * fileName, char * ip, char * errmsg)
+{
+	FILE *fd;
+	long timevar;
+	time (&timevar);
+
+	fd = fopen("log.txt", "a");
+	if(fd == NULL ) {fputs("Add to log: file error.", stderr); return;}
+
+	if(type==1) fprintf(fd, "Completada recepcion de %s desde %s\n", fileName, ip );
+	if(type==2) fprintf(fd, "Completado envio  de %s desde %s\n", fileName, ip );
+	if(type==5) fprintf(fd, "Envío de %s desde %s fallido debido a %s\n", fileName, ip, errmsg );
+
+	fclose(fd);
+}
+
 //Ejemplo: sendErrorMSG(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha podido encontrar");
 void sendErrorMSG_UDP(int s, struct sockaddr_in clientaddr_in, int codigoError, char * errMsg){
 	BYTE * msg;

@@ -563,6 +563,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
     if(VERBOSE) printf("No se ha encontrado el fichero.\n");
     if(tipo==UDP) sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
 		if(tipo==TCP) sendErrorMSG_TCP(s, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "No se ha enconrtado el fichero");
     return;
   }
 
@@ -583,6 +584,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
     if(VERBOSE) printf("Error al hacer el calloc.\n");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
 		if(tipo==TCP)	sendErrorMSG_TCP(s, NODEFINIDO, "Error al hacer el calloc");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error no definido durante la transmision (calloc)");
     fclose (fichero);
     return;
   }
@@ -651,6 +653,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
 
     if(getPacketType(asentimiento)==5){
       //printErrorMsg(asentimiento);
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), getErrorMsg(asentimiento));
       fclose(fichero);
       return;
     }
@@ -659,6 +662,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
       if(VERBOSE) printf("Se esperaba ack");
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
       if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba ack");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Se esperaba ack");
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
@@ -670,6 +674,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
       if(VERBOSE) printf("Numero asentimiento incorrecto");
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
       if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto");
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
@@ -680,6 +685,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   }
 
   if(VERBOSE) printf("Envio concluido\n");
+  addEndFileTransferInfoToLog(2, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "nada");
 
   fclose (fichero);
   free(datosFichero);
@@ -712,6 +718,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
     if(VERBOSE) printf("Error: El fichero ya existe.\n");
     if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
 		if(tipo==TCP)	sendErrorMSG_TCP(s, FICHEROYANOEXISTE, "El fichero ya existe");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "El fichero ya existe");
     fclose(fichero);
     return;
   }
@@ -722,6 +729,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
   if(VERBOSE) printf("ACK 0\n");
   if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
 	if(tipo==TCP)	send (s, packet, 4,0);
+
   while(fin!=2){
     packetNumber++;
 
@@ -757,6 +765,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
 
     if(getPacketType(parteFichero)==5){
      // printErrorMsg(parteFichero);
+     addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), getErrorMsg(parteFichero));
       fclose(fichero);
       return;
     }
@@ -767,6 +776,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
       if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
 			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba paquete");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error en la transmision, no se recibio correctamente un paquete de datos");
       fclose(fichero);
       return;
     }
@@ -775,6 +785,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
       if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
 			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto");
       fclose(fichero);
       return;
     }
@@ -788,6 +799,8 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
       fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");
+  addEndFileTransferInfoToLog(1, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "nada");
+
   fclose (fichero);
   return;
 }
