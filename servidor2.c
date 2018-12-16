@@ -295,27 +295,56 @@ char *argv[];
 
         /* Comprobamos si el socket seleccionado es el socket UDP */
         if (FD_ISSET(s_UDP, &readmask)) {
-          /* This call will block until a new
-          * request arrives.  Then, it will
-          * return the address of the client,
-          * and a buffer containing its request.
-          * BUFFERSIZE - 1 bytes are read so that
-          * room is left at the end of the buffer
-          * for a null character.
-          */
-          cc = recvfrom(s_UDP, buffer, BUFFERSIZE - 1, 0,
-             (struct sockaddr *)&clientaddr_in, &addrlen);
-          if ( cc == -1) {
-            perror(argv[0]);
-            printf("%s: recvfrom error\n", argv[0]);
-            sendErrorMSG_UDP(s_UDP, clientaddr_in, NODEFINIDO, "Mensaje mal entregado");
-            exit (1);
-            }
-          /* Make sure the message received is
-          * null terminated.
-          */
-          buffer[cc]='\0';
-          serverUDP (s_UDP, buffer, clientaddr_in);
+
+    			switch (fork()) {
+      			case -1:	/* Can't fork, just exit. */
+      				exit(1);
+      			case 0:		/* Child process comes here. */
+              /* This call will block until a new
+              * request arrives.  Then, it will
+              * return the address of the client,
+              * and a buffer containing its request.
+              * BUFFERSIZE - 1 bytes are read so that
+              * room is left at the end of the buffer
+              * for a null character.
+              */
+              cc = recvfrom(s_UDP, buffer, BUFFERSIZE - 1, 0,
+                 (struct sockaddr *)&clientaddr_in, &addrlen);
+              if ( cc == -1) {
+                perror(argv[0]);
+                printf("%s: recvfrom error\n", argv[0]);
+                sendErrorMSG_UDP(s_UDP, clientaddr_in, NODEFINIDO, "Mensaje mal entregado");
+                exit (1);
+                }
+              /* Make sure the message received is
+              * null terminated.
+              */
+              buffer[cc]='\0';
+
+              //Cambiamos el puerto para que no interfieran los paquetes entre procesos
+              int newSocket;
+              	/* Create the socket UDP. */
+            	newSocket = socket (AF_INET, SOCK_DGRAM, 0);
+            	if (newSocket == -1) {
+            		perror(argv[0]);
+            		printf("%s: unable to create socket on child.\n", argv[0]);
+            		exit(1);
+              }
+
+              myaddr_in.sin_port = htons(0);
+
+            	/* Bind the server's address to the socket. */
+            	if (bind(newSocket, (struct sockaddr *) &myaddr_in, sizeof(struct sockaddr_in)) == -1) {
+            		perror(argv[0]);
+            		printf("%s: unable to bind address UDP\n", argv[0]);
+            		exit(1);
+              }
+              serverUDP (newSocket, buffer, clientaddr_in);
+      				exit(0);
+
+      			default:
+              printf("Se genera udp\n");
+      		}
         }
       }
 		}   /* Fin del bucle infinito de atenci�n a clientes */
@@ -498,6 +527,7 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
   char * ultimosDatosFichero;
   char * packet;
   char * packetRetry;
+
   char asentimiento[4];
 
   int addrlen;
@@ -568,12 +598,6 @@ void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientad
 
 //    for(int i; i<PACKETSIZE; i++)
 //      printf("%d octal: %o decimal: %d char: %c \n",i, packet[i], packet[i], packet[i]);
-
-    if(enviado==0 && packetNumber == 3){
-      enviado = 1;
-      printf("\n\nDurmiendo\n\n");
-      sleep(6);
-    }
 
     if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
 		if(tipo==TCP)	send (s, packet, 4+datosAEnviar,0);
