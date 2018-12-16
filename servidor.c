@@ -35,8 +35,8 @@ extern int errno;
 #include "utils.c"
 
 
-void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in);
-void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int protocolo);
+void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int tipo);
+void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int tipo);
 
 /*
  *			M A I N
@@ -295,27 +295,58 @@ char *argv[];
 
         /* Comprobamos si el socket seleccionado es el socket UDP */
         if (FD_ISSET(s_UDP, &readmask)) {
-          /* This call will block until a new
-          * request arrives.  Then, it will
-          * return the address of the client,
-          * and a buffer containing its request.
-          * BUFFERSIZE - 1 bytes are read so that
-          * room is left at the end of the buffer
-          * for a null character.
-          */
-          cc = recvfrom(s_UDP, buffer, BUFFERSIZE - 1, 0,
-             (struct sockaddr *)&clientaddr_in, &addrlen);
-          if ( cc == -1) {
-            perror(argv[0]);
-            printf("%s: recvfrom error\n", argv[0]);
-            sendErrorMSG_UDP(s_UDP, clientaddr_in, NODEFINIDO, "Mensaje mal entregado");
-            exit (1);
-            }
-          /* Make sure the message received is
-          * null terminated.
-          */
-          buffer[cc]='\0';
-          serverUDP (s_UDP, buffer, clientaddr_in);
+
+    			switch (fork()) {
+      			case -1:	/* Can't fork, just exit. */
+      				exit(1);
+      			case 0:		/* Child process comes here. */
+              /* This call will block until a new
+              * request arrives.  Then, it will
+              * return the address of the client,
+              * and a buffer containing its request.
+              * BUFFERSIZE - 1 bytes are read so that
+              * room is left at the end of the buffer
+              * for a null character.
+              */
+              cc = recvfrom(s_UDP, buffer, BUFFERSIZE - 1, 0,
+                 (struct sockaddr *)&clientaddr_in, &addrlen);
+              if ( cc == -1) {
+                perror(argv[0]);
+                printf("%s: recvfrom error\n", argv[0]);
+                sendErrorMSG_UDP(s_UDP, clientaddr_in, NODEFINIDO, "Mensaje mal entregado");
+                exit (1);
+                }
+              /* Make sure the message received is
+              * null terminated.
+              */
+              buffer[cc]='\0';
+
+              //Cambiamos el puerto para que no interfieran los paquetes entre procesos
+              int newSocket;
+              	/* Create the socket UDP. */
+            	newSocket = socket (AF_INET, SOCK_DGRAM, 0);
+            	if (newSocket == -1) {
+            		perror(argv[0]);
+            		printf("%s: unable to create socket on child.\n", argv[0]);
+            		exit(1);
+              }
+
+              myaddr_in.sin_port = htons(0);
+
+            	/* Bind the server's address to the socket. */
+            	if (bind(newSocket, (struct sockaddr *) &myaddr_in, sizeof(struct sockaddr_in)) == -1) {
+            		perror(argv[0]);
+            		printf("%s: unable to bind address UDP\n", argv[0]);
+            		exit(1);
+              }
+              serverUDP (newSocket, buffer, clientaddr_in);
+
+              close(newSocket);
+      				exit(0);
+
+      			default:
+              if(VERBOSE) printf("Creando petición UDP.\n");
+      		}
         }
       }
 		}   /* Fin del bucle infinito de atenci�n a clientes */
@@ -344,16 +375,10 @@ char *argv[];
  */
 void serverTCP(int s, struct sockaddr_in clientaddr_in)
 {
-
-    int nc;
-  	int addrlen;
-    char *nombreFichero;
-    addrlen = sizeof(struct sockaddr_in);
-
   int reqcnt = 0;		/* keeps count of number of requests */
-  char buffer[BUFFERSIZE];		/* This example uses TAM_BUFFER byte messages. */
+  char buf[BUFFERSIZE];		/* This example uses TAM_BUFFER byte messages. */
   char hostname[MAXHOST];		/* remote host's name string */
-
+	char *nombreFichero;
   int len, len1, status;
   struct hostent *hp;		/* pointer to host info for remote host */
   long timevar;			/* contains time returned by time() */
@@ -387,7 +412,7 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
 	 * that this program could easily be ported to a host
 	 * that does require it.
 	 */
-  printf("Startup from %s port %u at %s",
+  if(VERBOSE) printf("Startup from %s port %u at %s",
     hostname, ntohs(clientaddr_in.sin_port), (char *) ctime(&timevar));
 
 	/* Set the socket for a lingering, graceful close.
@@ -400,83 +425,41 @@ void serverTCP(int s, struct sockaddr_in clientaddr_in)
     errout(hostname);
   }
 
-	/* Go into a loop, receiving requests from the remote
-	 * client.  After the client has sent the last request,
-	 * it will do a shutdown for sending, which will cause
-	 * an end-of-file condition to appear on this end of the
-	 * connection.  After all of the client's requests have
-	 * been received, the next recv call will return zero
-	 * bytes, signalling an end-of-file condition.  This is
-	 * how the server will know that no more requests will
-	 * follow, and the loop will be exited.
-	 */
-  while (len = recv(s, buffer, BUFFERSIZE, 0)) {
+
+  while (len = recv(s, buf, BUFFERSIZE, 0)) {
     if (len == -1) errout(hostname); /* error from recv */
-	  /* The reason this while loop exists is that there
-		 * is a remote possibility of the above recv returning
-		 * less than TAM_BUFFER bytes.  This is because a recv returns
-		 * as soon as there is some data, and will not wait for
-		 * all of the requested data to arrive.  Since TAM_BUFFER bytes
-		 * is relatively small compared to the allowed TCP
-		 * packet sizes, a partial receive is unlikely.  If
-		 * this example had used 2048 bytes requests instead,
-		 * a partial receive would be far more likely.
-		 * This loop will keep receiving until all TAM_BUFFER bytes
-		 * have been received, thus guaranteeing that the
-		 * next recv at the top of the loop will start at
-		 * the begining of the next request.
-		 */
-    while (len < BUFFERSIZE) {
-      len1 = recv(s, &buffer[len], BUFFERSIZE-len, 0);
-      if (len1 == -1) errout(hostname);
-      len += len1;
-    }
+	if(getPacketType(buf)==1){
+    addToLog("Iniciando peticion escritura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "TCP", ntohs(clientaddr_in.sin_port));
+    nombreFichero = getFilename(buf);
+    addFileTransferInfoToLog(getPacketType(buf), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+    serverRecibeFichero(s,getFilename(buf), clientaddr_in, TCP);
+  }
+  if(getPacketType(buf)==2){
+    addToLog("Iniciando peticion lectura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "TCP", ntohs(clientaddr_in.sin_port));
+    nombreFichero = getFilename(buf);
+    addFileTransferInfoToLog(getPacketType(buf), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
+    serverEnviaFichero(s, getFilename(buf), clientaddr_in, TCP);
+  }
+  if(getPacketType(buf)==5){
+    printError(getErrorCode(buf));
+  }
+  else {
+    sendErrorMSG_TCP(s, OPERACIONILEGAL, "Operacion no permitida, solo WRQ RRQ");
+  }
   		/* Increment the request count. */
     reqcnt++;
   		/* This sleep simulates the processing of the
   		 * request that a real server might do.
   		 */
-    sleep(1);
-  	/* Send a response back to the client. */
-    //if (send(s, buf, TAM_BUFFER, 0) != TAM_BUFFER) errout(hostname);
-    if(getPacketType(buffer)==1){
-      nombreFichero = getFilename(buffer);
-      if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
-      addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-      serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in,1);
-    }
-    if(getPacketType(buffer)==2){
-      nombreFichero = getFilename(buffer);
-      if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
-      addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-      serverUDPEnviaFichero(s, getFilename(buffer), clientaddr_in);
-    }
-    if(getPacketType(buffer)==5){
-      printError(getErrorCode(buffer));
-    }
   }
 
-	/* The loop has terminated, because there are no
-	 * more requests to be serviced.  As mentioned above,
-	 * this close will block until all of the sent replies
-	 * have been received by the remote host.  The reason
-	 * for lingering on the close is so that the server will
-	 * have a better idea of when the remote has picked up
-	 * all of the data.  This will allow the start and finish
-	 * times printed in the log file to reflect more accurately
-	 * the length of time this connection was used.
-	 */
+
   close(s);
 
 	/* Log a finishing message. */
   time (&timevar);
-	/* The port number must be converted first to host byte
-	 * order before printing.  On most hosts, this is not
-	 * necessary, but the ntohs() call is included here so
-	 * that this program could easily be ported to a host
-	 * that does require it.
-	 */
-  printf("Completed %s port %u, %d requests, at %s\n",
+
+  if(VERBOSE) printf("Completed %s port %u, %d requests, at %s\n",
 		hostname, ntohs(clientaddr_in.sin_port), reqcnt, (char *) ctime(&timevar));
 }
 
@@ -503,26 +486,35 @@ void errout(char *hostname)
 // Venimos de la llamada: serverUDP (s_UDP, buffer, clientaddr_in);
 void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 {
-  printf("Starting serverUDP on socket: %d \n", s);
-  //https://stackoverflow.com/questions/24182950/how-to-get-hostname-from-ip-linux
-  addToLog("Inicia peticion: ", buffer, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
+  //if(VERBOSE) printf("Starting serverUDP on socket: %d \n", s);
 
-  int nc;
+  int nc, status;
 	int addrlen;
   char *nombreFichero;
+
+  char hostname[MAXHOST];
+
   addrlen = sizeof(struct sockaddr_in);
 
+  status = getnameinfo((struct sockaddr *)&clientaddr_in,sizeof(clientaddr_in),
+                           hostname,MAXHOST,NULL,0,0);
+  if(status){
+    if (inet_ntop(AF_INET, &(clientaddr_in.sin_addr), hostname, MAXHOST) == NULL)
+      perror(" inet_ntop \n");
+  }
+
   if(getPacketType(buffer)==1){
+    inet_ntop(AF_INET, &(clientaddr_in.sin_addr), hostname, MAXHOST);
+    addToLog("Iniciando peticion escritura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buffer);
-    if(VERBOSE)  printf("Recibiendo fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-    serverUDPRecibeFichero(s,getFilename(buffer), clientaddr_in,2);
+    serverRecibeFichero(s,getFilename(buffer), clientaddr_in, UDP);
   }
   if(getPacketType(buffer)==2){
+    addToLog("Iniciando peticion lectura-> ", hostname, inet_ntoa(clientaddr_in.sin_addr), "UDP", ntohs(clientaddr_in.sin_port));
     nombreFichero = getFilename(buffer);
-    if(VERBOSE)  printf("Enviando fichero: %s\n", nombreFichero);
     addFileTransferInfoToLog(getPacketType(buffer), nombreFichero, inet_ntoa(clientaddr_in.sin_addr));
-    serverUDPEnviaFichero(s, getFilename(buffer), clientaddr_in);
+    serverEnviaFichero(s, getFilename(buffer), clientaddr_in, UDP);
   }
   if(getPacketType(buffer)==5){
     printError(getErrorCode(buffer));
@@ -533,16 +525,20 @@ void serverUDP(int s, char * buffer, struct sockaddr_in clientaddr_in)
 }
 
 
-void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in)
+void serverEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int tipo)
 {
   int i, packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
+
+  int reenviar = 0;
+  int retries = 0;
 
   int datosAEnviar = PACKETSIZE;
 
   char * datosFichero;
   char * ultimosDatosFichero;
   char * packet;
+
   char asentimiento[4];
 
   int addrlen;
@@ -562,7 +558,9 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
   fichero = fopen(rutaFichero,"rb");
   if(fichero==NULL){
     if(VERBOSE) printf("No se ha encontrado el fichero.\n");
-    sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+    if(tipo==UDP) sendErrorMSG_UDP(s, clientaddr_in, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+		if(tipo==TCP) sendErrorMSG_TCP(s, FICHERONOENCONTRADO, "No se ha encontrado el fichero");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "No se ha enconrtado el fichero");
     return;
   }
 
@@ -581,94 +579,119 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 
   if(datosFichero==NULL || ultimosDatosFichero==NULL){
     if(VERBOSE) printf("Error al hacer el calloc.\n");
-    sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
+    if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al hacer el calloc");
+		if(tipo==TCP)	sendErrorMSG_TCP(s, NODEFINIDO, "Error al hacer el calloc");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error no definido durante la transmision (calloc)");
     fclose (fichero);
     return;
   }
 
   while(fin!=2){
-    packetNumber++;
+    if(reenviar == 0){
+      packetNumber++;
 
-    if(packetNumber<=numPaquetes){
-      fread(datosFichero, PACKETSIZE,1,fichero);
-      packet = DATAPacket(packetNumber,datosFichero);
-    }
-    else {
-      fin=1;
-      if(restoPaquete!=0){
-        fread(ultimosDatosFichero, restoPaquete,1,fichero);
-        datosAEnviar = restoPaquete;
+      if(packetNumber<=numPaquetes){
+        fread(datosFichero, PACKETSIZE,1,fichero);
+        packet = DATAPacket(packetNumber,datosFichero);
       }
-      else{
-        ultimosDatosFichero[0]=0;
-        datosAEnviar = 1;
+      else {
+        fin=1;
+        if(restoPaquete!=0){
+          fread(ultimosDatosFichero, restoPaquete,1,fichero);
+          datosAEnviar = restoPaquete;
+        }
+        else{
+          ultimosDatosFichero[0]=0;
+          datosAEnviar = 1;
+        }
+        packet = DATAPacket(packetNumber,ultimosDatosFichero);
       }
-      packet = DATAPacket(packetNumber,ultimosDatosFichero);
+
+      if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
+    }
+    if(reenviar == 1){
+      reenviar = 0;
+      if(VERBOSE) printf("Reenviando paquete %d...\n", packetNumber);
     }
 
-    if(VERBOSE) printf("Enviando paquete %d...\n", packetNumber);
-//    printMSG(packet);
+    if(tipo==UDP)	sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
+		if(tipo==TCP)	send (s, packet, 4+datosAEnviar,0);
 
-//    for(int i; i<PACKETSIZE; i++)
-//      printf("%d octal: %o decimal: %d char: %c \n",i, packet[i], packet[i], packet[i]);
-
-    sendto (s, packet, 4+datosAEnviar,0, (struct sockaddr *)&clientaddr_in, addrlen);
-
-    alarm(TIMEOUT);
-    cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
-    printf("len: %d\n", cc);
+    if(tipo==UDP)	alarm(TIMEOUT*2);
+    if(tipo==UDP)	cc = recvfrom (s, asentimiento, 4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(tipo==TCP)	cc = recv (s, asentimiento, 4,0);
     if(cc == -1){
-      if (errno == EINTR) {
+			if(tipo==UDP){
+   	  	if (errno == EINTR) {
   				/* Alarm went off and aborted the receive.
   				 * Need to retry the request if we have
   				 * not already exceeded the retry limit.
   				 */
-        if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
-        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
-      }
-      else {
-        if(VERBOSE) printf("Error al recibir un mensaje\n");
-        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
-      }
+        	if(VERBOSE) printf("Timeout vencido: No se recibio ACK.\n");
+          if(retries<5){
+            reenviar = 1;
+            retries++;
+            if(VERBOSE) printf("Intento n %d.\n", retries);
+            continue;
+          }
+        	else
+        	 sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio ACK\n");
+      	}
+      	else {
+        	if(VERBOSE) printf("Error al recibir un mensaje\n");
+        	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
+      	}
+			}
+			if(tipo==TCP){
+				if(VERBOSE) printf("Error al recibir un mensaje\n");
+        sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+			}
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error al recibir un mensaje\n");
       fclose (fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
       return;
     }
-    alarm(0);
+    if(tipo==UDP) alarm(0);
 
     //Para comprobar el timeout
     //if(packetNumber == 5){ return;}
 
     if(getPacketType(asentimiento)==5){
-      printErrorMsg(asentimiento);
+      //printErrorMsg(asentimiento);
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), getErrorMsg(asentimiento));
       fclose(fichero);
       return;
     }
 
     if(getPacketType(asentimiento)!=4){
       if(VERBOSE) printf("Se esperaba ack");
-      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
+      if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba ack");
+      if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba ack");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Se esperaba ack");
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
       return;
     }
 
-    if(VERBOSE) printf("ACK paquete: %d\n", getPacketNumber(asentimiento));
+    //if(VERBOSE) printf("ACK paquete: %d, packetNumber: %d\n", getPacketNumber(asentimiento),packetNumber);
     if(getPacketNumber(asentimiento)!=packetNumber){
       if(VERBOSE) printf("Numero asentimiento incorrecto");
-      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto");
       fclose(fichero);
       free(datosFichero);
       free(ultimosDatosFichero);
       return;
     }
     if(fin==1)
-      fin=2;
+    fin=2;
   }
 
   if(VERBOSE) printf("Envio concluido\n");
+  addEndFileTransferInfoToLog(2, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "nada");
 
   fclose (fichero);
   free(datosFichero);
@@ -679,10 +702,12 @@ void serverUDPEnviaFichero(int s, char * Nombrefichero, struct sockaddr_in clien
 
 
 
-void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int protocolo)
+void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clientaddr_in, int tipo)
 {
   int packetNumber=0,fin=0;
   int cc;				    /* contains the number of bytes read */
+  int retries = 0;
+  int reenviar = 0;
 
   char * packet;
   char parteFichero[PACKETSIZE+4];
@@ -699,7 +724,9 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
   fichero = fopen(rutaFichero,"rb");
   if(fichero!=NULL){
     if(VERBOSE) printf("Error: El fichero ya existe.\n");
-    sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
+    if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, FICHEROYANOEXISTE, "El fichero ya existe");
+		if(tipo==TCP)	sendErrorMSG_TCP(s, FICHEROYANOEXISTE, "El fichero ya existe");
+    addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "El fichero ya existe");
     fclose(fichero);
     return;
   }
@@ -707,32 +734,48 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
   fichero = fopen(rutaFichero,"wb");
   packet = ACK(0);
 
-  if(VERBOSE) printf("ACK 0\n");
-  sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+  if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+	if(tipo==TCP)	send (s, packet, 4,0);
 
   while(fin!=2){
-    packetNumber++;
-
-    alarm(TIMEOUT);
-    if(protocolo == 1) {
-      cc = recv(s, parteFichero, PACKETSIZE+4,0);
-      printf("cc%d \n",cc);
-      return;
+    if(reenviar == 0){
+      packetNumber++;
     }
-    if(protocolo == 2) cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+    if(reenviar == 1){
+      reenviar = 0;
+    }
+
+    if(tipo==UDP)	alarm(TIMEOUT);
+    if(tipo==UDP)	cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
+		if(tipo==TCP)	cc = recv (s, parteFichero, PACKETSIZE+4,0);
     if(cc == -1){
-      if (errno == EINTR) {
+			if(tipo==TCP){
+      	if (errno == EINTR) {
   				/* Alarm went off and aborted the receive.
   				 * Need to retry the request if we have
   				 * not already exceeded the retry limit.
   				 */
-        if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
-        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
-      }
-      else {
-        if(VERBOSE) printf("Error al recibir un mensaje\n");
-        sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
-      }
+        	if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
+          if(retries<5){
+            sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen); //reenviamos el ultimo ack
+            reenviar = 1;
+            retries++;
+            if(VERBOSE) printf("Intento n %d.\n", retries);
+            continue;
+          }
+        	else
+        	 sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
+      	}
+      	else {
+        	if(VERBOSE) printf("Error al recibir un mensaje\n");
+        	if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Error al recibir un mensaje\n");
+      	}
+			 }
+			if(tipo==TCP){
+				if(VERBOSE) printf("Error al recibir un mensaje\n");
+        sendErrorMSG_TCP(s, NODEFINIDO, "Error al recibir un mensaje\n");
+			}
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error al recibir un mensaje\n");
       fclose(fichero);
       return;
     }
@@ -742,7 +785,8 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
     //if(packetNumber==5) { sleep(7); return;}
 
     if(getPacketType(parteFichero)==5){
-      printErrorMsg(parteFichero);
+     // printErrorMsg(parteFichero);
+     addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), getErrorMsg(parteFichero));
       fclose(fichero);
       return;
     }
@@ -751,26 +795,33 @@ void serverUDPRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clie
 
     if(getPacketType(parteFichero)!=3){
       if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
-      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
+      if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
+			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba paquete");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error en la transmision, no se recibio correctamente un paquete de datos");
       fclose(fichero);
       return;
     }
 
     if(getPacketNumber(parteFichero)!=packetNumber){
       if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
-      sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto");
       fclose(fichero);
       return;
     }
 
     fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero);
     packet = ACK(packetNumber);
-    sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+    if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
+		if(tipo==TCP)	send (s, packet, 4,0);
 
     if(cc-4<PACKETSIZE)
       fin=2;
   }
   if(VERBOSE) printf("Fichero recibido.\n");
+  addEndFileTransferInfoToLog(1, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "nada");
+
   fclose (fichero);
   return;
 }
