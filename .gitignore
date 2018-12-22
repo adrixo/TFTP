@@ -35,10 +35,14 @@
 *.i*86
 *.x86_64
 *.hex
+
+exp.c
 now
+cliente
 clienteudp
 clientetcp
 servidor
+
 
 # Debug files
 *.dSYM/
