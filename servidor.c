@@ -735,7 +735,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
   packet = ACK(0);
 
   if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
-	if(tipo==TCP)	send (s, packet, 4,0);
+  if(tipo==TCP)	send (s, packet, 4,0);
 
   while(fin!=2){
     if(reenviar == 0){
@@ -747,7 +747,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
 
     if(tipo==UDP)	alarm(TIMEOUT);
     if(tipo==UDP)	cc = recvfrom (s, parteFichero, PACKETSIZE+4,0,(struct sockaddr *)&clientaddr_in, &addrlen);
-		if(tipo==TCP)	cc = recv (s, parteFichero, PACKETSIZE+4,0);
+    if(tipo==TCP)	cc = recv (s, parteFichero, PACKETSIZE+4,0);
     if(cc == -1){
 			if(tipo==TCP){
       	if (errno == EINTR) {
@@ -755,15 +755,15 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
   				 * Need to retry the request if we have
   				 * not already exceeded the retry limit.
   				 */
-        	if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
-          if(retries<5){
+        if(VERBOSE) printf("Timeout vencido: No se recibio paquete.\n");
+        if(retries<5){
             sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen); //reenviamos el ultimo ack
             reenviar = 1;
             retries++;
             if(VERBOSE) printf("Intento n %d.\n", retries);
             continue;
-          }
-        	else
+        }
+        else
         	 sendErrorMSG_UDP(s, clientaddr_in, NODEFINIDO, "Timeout: No se recibio paquete\n");
       	}
       	else {
@@ -796,7 +796,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
     if(getPacketType(parteFichero)!=3){
       if(VERBOSE) printf("Se esperaba paquete: %d\n",getPacketType(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Se esperaba paquete");
-			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba paquete");
+      if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Se esperaba paquete");
       addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Error en la transmision, no se recibio correctamente un paquete de datos");
       fclose(fichero);
       return;
@@ -805,7 +805,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
     if(getPacketNumber(parteFichero)!=packetNumber){
       if(VERBOSE) printf("Numero asentimiento incorrecto: %d\n",getPacketNumber(parteFichero));
       if(tipo==UDP)	sendErrorMSG_UDP(s, clientaddr_in, OPERACIONILEGAL, "Numero asentimiento incorrecto");
-			if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
+      if(tipo==TCP)	sendErrorMSG_TCP(s, OPERACIONILEGAL, "Numero asentimiento incorrecto");
       addEndFileTransferInfoToLog(5, Nombrefichero,  inet_ntoa(clientaddr_in.sin_addr), "Numero asentimiento incorrecto");
       fclose(fichero);
       return;
@@ -814,7 +814,7 @@ void serverRecibeFichero(int s, char * Nombrefichero, struct sockaddr_in clienta
     fwrite(getDataMSG(parteFichero, cc-4), cc-4, 1, fichero);
     packet = ACK(packetNumber);
     if(tipo==UDP)	sendto (s, packet, 4,0, (struct sockaddr *)&clientaddr_in, addrlen);
-		if(tipo==TCP)	send (s, packet, 4,0);
+    if(tipo==TCP)	send (s, packet, 4,0);
 
     if(cc-4<PACKETSIZE)
       fin=2;
